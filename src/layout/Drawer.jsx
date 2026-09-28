@@ -72,25 +72,30 @@ const sidebarSections = [
     ],
   },
   {
-    title: "Workspace",
-    items: [
-      {
-        label: "Organization",
-        icon: <Business />,
-        path: "/account-manager/organization",
-      },
-      {
-        label: "User Management",
-        icon: <ManageAccountsOutlined />,
-        path: "/account-manager/user-management",
-      },
-      {
-        label: "Candidates",
-        icon: <People />,
-        path: "/account-manager/candidates",
-      },
-    ],
-  },
+  title: "Workspace",
+  items: [
+    {
+      label: "Organization",
+      icon: <Business />,
+      path: "/account-manager/organization",
+    },
+    {
+      label: "User Management",
+      icon: <ManageAccountsOutlined />,
+      path: "/account-manager/user-management",
+    },
+    {
+      label: "Demo Requests",
+      icon: <MoveToInboxOutlined />,
+      path: "/account-manager/demo-requests",
+    },
+    {
+      label: "Candidates",
+      icon: <People />,
+      path: "/account-manager/candidates",
+    },
+  ],
+},
   {
     title: "Help",
     items: [
