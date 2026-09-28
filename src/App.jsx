@@ -34,6 +34,7 @@ import MatchedCandidates from "./pages/OrgRequisitions/createJob/matchedCandidat
 import ViewProfileDetails from "./pages/OrgRequisitions/createJob/ViewProfileDetails";
 import DemoRequests from "./pages/DemoRequests";
 import ProvisionSignup from "./pages/ProvisionSignup";
+import Subscriptions from "./pages/subscriptions";
 const App = () => {
   return (
     <>
@@ -101,6 +102,10 @@ const App = () => {
             <Route
               path="settings/change-password"
               element={<ChangePasswordPage />}
+            />
+            <Route
+              path="subscriptions"
+              element={<Subscriptions />}
             />
           </Route>
 

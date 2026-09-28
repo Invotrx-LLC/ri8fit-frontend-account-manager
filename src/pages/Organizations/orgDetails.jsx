@@ -827,6 +827,24 @@ const TAB_SX = {
   "& .MuiTabs-indicator": { backgroundColor: C.accent },
 };
 
+function getAnalyticsCount(value) {
+  if (value == null) return 0;
+  if (typeof value === "number" || typeof value === "string") return value;
+
+  if (typeof value === "object") {
+    return (
+      value.count ??
+      value.value ??
+      value.job_details_count ??
+      value.unique_candidates_count ??
+      value.matched_candidates_count ??
+      0
+    );
+  }
+
+  return 0;
+}
+
 // ─── Status badge (inline) ────────────────────────────────────────────────────
 function StatusPill({ status }) {
   const chip = statusChip(status);
@@ -885,27 +903,25 @@ function OrgHeroHeader({ org, analytics, orgId }) {
   const statPills = [
     {
       label: "Total Jobs",
-      value:
-        analytics?.job_overview?.total_jobs?.value ??
-        org.total_jobs ??
-        "—",
+      value: getAnalyticsCount(
+        analytics?.job_overview?.total_jobs ?? org.total_jobs,
+      ),
       accent: C.accent,
       soft: C.accentSoft,
       border: C.accentBorder,
     },
     {
       label: "Candidates",
-      value: analytics?.total_candidates ?? "—",
+      value: getAnalyticsCount(analytics?.total_candidates),
       accent: C.indigo,
       soft: C.indigoSoft,
       border: C.indigoBorder,
     },
     {
       label: "Hires",
-      value:
-        analytics?.candidate_stage_breakdown?.onboarded ??
-        org.total_hires ??
-        "—",
+      value: getAnalyticsCount(
+        analytics?.candidate_stage_breakdown?.onboarded ?? org.total_hires,
+      ),
       accent: C.green,
       soft: C.greenSoft,
       border: C.greenBorder,
@@ -978,10 +994,7 @@ function OrgHeroHeader({ org, analytics, orgId }) {
             }}
           >
             <Typography
-              fontSize={22}
-              fontWeight={700}
-              color={C.textPrimary}
-              lineHeight={1}
+              sx={{ fontSize: 22, fontWeight: 700, color: C.textPrimary, lineHeight: 1 }}
             >
               {org.organisation_name}
             </Typography>
@@ -2520,9 +2533,7 @@ function OrgCandidatesTab({ orgId, navigate, orgName }) {
         accessorFn: (row) => row.jobs?.length ?? 0,
         Cell: ({ cell }) => (
           <Typography
-            sx={{ fontSize: 12 }}
-            fontWeight={600}
-            color={C.textPrimary}
+            sx={{ fontSize: 12, fontWeight: 600, color: C.textPrimary }}
           >
             {cell.getValue()}
           </Typography>
@@ -4461,7 +4472,7 @@ function NoData() {
         height: 200,
       }}
     >
-      <Typography fontSize={12} color={C.textTertiary}>
+      <Typography sx={{ fontSize: 12, color: C.textTertiary }}>
         No data available
       </Typography>
     </Box>
@@ -4471,12 +4482,14 @@ function NoData() {
 function SectionLabel({ children }) {
   return (
     <Typography
-      fontSize={11}
-      fontWeight={700}
-      color={C.textSecondary}
-      letterSpacing="0.08em"
-      mb="12px"
-      sx={{ textTransform: "uppercase" }}
+      sx={{
+        fontSize: 11,
+        fontWeight: 700,
+        color: C.textSecondary,
+        letterSpacing: "0.08em",
+        mb: "12px",
+        textTransform: "uppercase",
+      }}
     >
       {children}
     </Typography>
@@ -4497,11 +4510,11 @@ function StaticPlaceholder({ label, description }) {
       <WorkOutlineRoundedIcon
         sx={{ fontSize: 42, color: C.textTertiary, mb: 1.5 }}
       />
-      <Typography fontSize={15} fontWeight={600} color={C.textPrimary}>
+      <Typography sx={{ fontSize: 15, fontWeight: 600, color: C.textPrimary }}>
         {label}
       </Typography>
       {description && (
-        <Typography fontSize={13} color={C.textSecondary} mt={0.5}>
+        <Typography sx={{ fontSize: 13, color: C.textSecondary, mt: 0.5 }}>
           {description}
         </Typography>
       )}

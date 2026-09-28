@@ -1,1910 +1,3718 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useMemo, useState } from "react";
+
 import {
-  Grid, Typography, Button, Avatar, TextField,
-  IconButton, Box, Skeleton,
-  DialogTitle,
-  Dialog,
-  DialogContent,
-  DialogActions,
-  CircularProgress,
-  Chip,
-  FormControl,
+  Box,
+  Typography,
+  IconButton,
   Select,
   MenuItem,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
-import BusinessCenterOutlinedIcon from "@mui/icons-material/BusinessCenterOutlined";
-import WorkOffOutlinedIcon from "@mui/icons-material/WorkOffOutlined";
-import HowToRegOutlinedIcon from "@mui/icons-material/HowToRegOutlined";
-import CasesOutlinedIcon from "@mui/icons-material/CasesOutlined";
-import CloseIcon from "@mui/icons-material/Close";
-import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
-import { useNavigate } from "react-router-dom";
-import _isArray from "lodash/isArray";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
-import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
-import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
-import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
-import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
-import { useTheme, useMediaQuery } from "@mui/material";
-import HandshakeOutlinedIcon from "@mui/icons-material/HandshakeOutlined";
-import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
-import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
-import ThumbDownAltOutlinedIcon from "@mui/icons-material/ThumbDownAltOutlined";
-import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
-import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
-import PersonRemoveOutlinedIcon from "@mui/icons-material/PersonRemoveOutlined";
-import MuiTooltip from "@mui/material/Tooltip";
+
 import {
-  DashboardContainer, SectionCard, JobItem, StatusChip,
-  StatCard, getDashboardStyles,
-} from "./styles";
-// import { AppContext } from "../../../AppContext";
-import { useLocation } from "react-router-dom";
-import {
-  useGetCandidateListByStatusQuery,
-  useGetJobAnalyticsQuery,
-  useGetJobsListQuery,
-  useLazyGetStageDetailsQuery,
-} from "../../redux/services/dashboard/dashboardService.js";
-import {
-  COLORS,
-  Dashboard_STATUS_COLORS,
-  INTERVIEW_ROUND_STATUS_COLORS,
-} from "../../theme/index";
-import { toast } from "react-toastify";
-import CandidatePipelineFunnel from "./CandidatePipelineFunnel";
-import TrendLineChart from "./charts/TrendLineChart";
-import DonutChart from "./charts/DonutChart";
-import HorizontalBarChart from "./charts/HorizontalBarChart";
-import DashboardTableView from "./DashboardTableView";
-import PeriodSelect, { SubFunctionSelect, CountrySelect } from "./DashboardFilterBar";
-import Sparkline from "./charts/Sparkline";
-import { exportDashboardToPdf } from "../../utils/dashboardExportPdf.js";
-import { useRef } from "react";
-import Confetti from "react-confetti"; // npm install react-confetti
-// import ClinicalHiringLogo from "../../../assets/clinical-hiring-logo.jpeg";
-import { AddCircleOutlineRounded, PersonSearchOutlined, RocketLaunchOutlined } from "@mui/icons-material";
-import { EMPLOYEE_NAME } from "../../utils/constants.js";
-import { useSelector } from "react-redux";
-import { selectGlobalSearchQuery } from "../../redux/slices/globalSearchSlice.js";
-import { useGetJobAnalyticsV2Query } from "../../redux/services/organizationOverview/organizationOverview.js";
+  useGetJobOverviewQuery,
+  useGetTotalPositionsQuery,
+  useGetCandidateFunnelTrendQuery,
+  useGetInterviewTrendQuery,
+  useGetOfferTrendQuery,
+} from "../../redux/services/organizationOverview/organizationOverview.js";
 
-// ── Constants ──────────────────────────────────────────────────────────────
-const STATS_CONFIG = [
+// ============================================================
+// COLORS
+// ============================================================
+
+const COLORS = {
+  blue: "#2563EB",
+  blueDark: "#174FDF",
+
+  border: "#E2E8F0",
+  background: "#F8FAFC",
+
+  text: "#111827",
+  textSecondary: "#64748B",
+  textMuted: "#94A3B8",
+
+  open: "#0FA3B1",
+  closed: "#E53935",
+  hold: "#F59E0B",
+
+  scheduled: "#FFB300",
+  rescheduled: "#5C6BC0",
+  completed: "#4CAF50",
+  notConducted: "#8B5CF6",
+  cancelled: "#E53935",
+  noShow: "#9E9E9E",
+
+  selected: "#22A55A",
+  shortlisted: "#2962E8",
+  interview: "#7B3FE4",
+  offers: "#E88A00",
+  onboarded: "#218B52",
+};
+
+// ============================================================
+// STATIC DATA
+// Only sections that do not have an API in the current page
+// remain static.
+// ============================================================
+
+const DATA = {
+  candidates: {
+    total: 133,
+    applications: 478,
+    shortlisted: 102,
+    interview: 39,
+    onboarded: 17,
+  },
+
+  subFunctions: [
+    {
+      label: "Clinical Data Manager",
+      value: 541,
+      color: "#E91E8C",
+    },
+    {
+      label: "Statistical Programmer",
+      value: 92,
+      color: "#7B61FF",
+    },
+    {
+      label: "Biostatistician",
+      value: 47,
+      color: "#00BFA5",
+    },
+    {
+      label: "Clinical Programmer/CRF Dev",
+      value: 14,
+      color: "#D32F2F",
+    },
+    {
+      label: "Medical Coder",
+      value: 5,
+      color: "#FFA000",
+    },
+    {
+      label: "Generic",
+      value: 0,
+      color: "#9E9E9E",
+    },
+  ],
+
+  experience: [
+    {
+      label: "0–2 yrs",
+      value: 4,
+      pct: 3,
+      color: "#174FDF",
+    },
+    {
+      label: "3–5 yrs",
+      value: 69,
+      pct: 52,
+      color: "#0571ED",
+    },
+    {
+      label: "6–10 yrs",
+      value: 54,
+      pct: 41,
+      color: "#0097A7",
+    },
+    {
+      label: "10+ yrs",
+      value: 6,
+      pct: 5,
+      color: "#00BBD4",
+    },
+  ],
+
+  offers: [
+    {
+      label: "Released",
+      value: 10,
+      color: "#E88A00",
+    },
+    {
+      label: "Accepted",
+      value: 4,
+      color: "#26A69A",
+    },
+    {
+      label: "Rejected",
+      value: 0,
+      color: "#E53935",
+    },
+    {
+      label: "Revoked",
+      value: 3,
+      color: "#C54B0A",
+    },
+  ],
+};
+
+// ============================================================
+// SUB FUNCTION OPTIONS
+// ============================================================
+
+const SUB_FUNCTION_OPTIONS = [
   {
-    title: "Total Jobs",
-    key: "job_overview.total_jobs",
-    Icon: BusinessCenterOutlinedIcon,
-    iconBg: "#E3F2FD",
-    iconColor: "#1976D2",
-    sparkColor: "#1976D2",
-    navType: "all",
+    label: "All Sub-functions",
+    value: "all",
   },
   {
-    title: "Open Jobs",
-    key: "job_overview.open_jobs",
-    Icon: CasesOutlinedIcon,
-    iconBg: "#E0F7FA",
-    iconColor: "#0097A7",
-    sparkColor: "#0097A7",
-    navType: "active",
+    label: "Biostatistician",
+    value: "biostatistician",
   },
   {
-    title: "Closed Jobs",
-    key: "job_overview.closed_jobs",
-    Icon: WorkOffOutlinedIcon,
-    iconBg: "#FFEBEE",
-    iconColor: "#D32F2F",
-    sparkColor: "#D32F2F",
-    navType: "closed",
+    label: "Clinical Data Manager",
+    value: "clinical_data_manager",
   },
   {
-    title: "Onboarded Candidates",
-    key: "candidate_stage_breakdown.onboarded",
-    Icon: BadgeOutlinedIcon,
-    iconBg: Dashboard_STATUS_COLORS.onboarded.bg,
-    iconColor: Dashboard_STATUS_COLORS.onboarded.color,
-    sparkColor: Dashboard_STATUS_COLORS.onboarded.color,
-    navType: "stage",
+    label: "Clinical Programmer / CRF Developer",
+    value: "clinical_programmer_crf_developer",
+  },
+  {
+    label: "General",
+    value: "general",
+  },
+  {
+    label: "medical coder",
+    value: "medical_coder",
+  },
+  {
+    label: "Statistical Programmer",
+    value: "statistical_programmer",
   },
 ];
 
-const CANDIDATE_STATS_CONFIG = [
-  {
-    title: "Matched",
-    key: "candidate_stage_breakdown.matched",
-    Icon: HandshakeOutlinedIcon,
-    iconBg: Dashboard_STATUS_COLORS.matched.bg,
-    color: Dashboard_STATUS_COLORS.matched.color,
-  },
-  {
-    title: "Shortlisted",
-    key: "candidate_stage_breakdown.shortlisted",
-    Icon: BadgeOutlinedIcon,
-    iconBg: Dashboard_STATUS_COLORS.shortlisted.bg,
-    color: Dashboard_STATUS_COLORS.shortlisted.color,
-  },
-  {
-    title: "Interview",
-    key: "candidate_stage_breakdown.interviewing.total",   // ← .total added
-    Icon: EventAvailableOutlinedIcon,
-    iconBg: Dashboard_STATUS_COLORS.interviewing.bg,
-    color: Dashboard_STATUS_COLORS.interviewing.color,
-  },
-  {
-    title: "Selected",
-    key: "candidate_stage_breakdown.selected",
-    Icon: HowToRegOutlinedIcon,
-    iconBg: Dashboard_STATUS_COLORS.selected.bg,
-    color: Dashboard_STATUS_COLORS.selected.color,
-  },
-  {
-    title: "Offer Released",
-    key: "candidate_stage_breakdown.offers.offer_released.total",   // ← .total added
-    Icon: DescriptionOutlinedIcon,
-    iconBg: Dashboard_STATUS_COLORS.offer_released.bg,
-    color: Dashboard_STATUS_COLORS.offer_released.color,
-  },
-  {
-    title: "Offer Rejected",
-    key: "candidate_stage_breakdown.offers.offer_released.offer_rejected",
-    Icon: ThumbDownAltOutlinedIcon,
-    iconBg: Dashboard_STATUS_COLORS.offer_rejected.bg,
-    color: Dashboard_STATUS_COLORS.offer_rejected.color,
-  },
-  {
-    title: "Offer Revoked",
-    key: "candidate_stage_breakdown.offers.offer_released.offer_revoked",
-    Icon: BlockOutlinedIcon,
-    iconBg: Dashboard_STATUS_COLORS.offer_revoked.bg,
-    color: Dashboard_STATUS_COLORS.offer_revoked.color,
-  },
-  {
-    title: "Onboarded",
-    key: "candidate_stage_breakdown.onboarded",
-    Icon: BadgeOutlinedIcon,
-    iconBg: Dashboard_STATUS_COLORS.onboarded.bg,
-    color: Dashboard_STATUS_COLORS.onboarded.color,
-  },
-];
+// ============================================================
+// TOGGLE
+// ============================================================
 
-
-const CHART_COLORS = {
-  open: COLORS.royalBlue,
-  closed: "#F44336",
-  matched: Dashboard_STATUS_COLORS.matched.color,
-  shortlisted: Dashboard_STATUS_COLORS.shortlisted.color,
-  selected: Dashboard_STATUS_COLORS.selected.color,
-  rejected: Dashboard_STATUS_COLORS.rejected.color,
-  onboarded: Dashboard_STATUS_COLORS.onboarded.color,
-  interviewPassed: INTERVIEW_ROUND_STATUS_COLORS.completed.color,
-  interviewFailed: "#FF5722",
-  interviewNoShow: INTERVIEW_ROUND_STATUS_COLORS["no show"].color,
-  interviewCancelled: INTERVIEW_ROUND_STATUS_COLORS.cancelled.color,
-  interviewScheduled: INTERVIEW_ROUND_STATUS_COLORS.scheduled.color,
-  interviewRescheduled: INTERVIEW_ROUND_STATUS_COLORS.rescheduled.color,
-  offerReleased: Dashboard_STATUS_COLORS.offer_released.color,
-  offerAccepted: Dashboard_STATUS_COLORS.offer_accepted.color,
-  offerRejected: Dashboard_STATUS_COLORS.offer_rejected.color,
-  offerRevoked: Dashboard_STATUS_COLORS.offer_revoked.color,
-  interviewing: Dashboard_STATUS_COLORS.interviewing.color,
-};
-
-// ── Utility helpers ────────────────────────────────────────────────────────
-const getNestedValue = (obj, path) =>
-  path.split(".").reduce((acc, part) => acc?.[part], obj);
-
-const getSafeCount = (obj, path) => {
-  const val = getNestedValue(obj, path);
-
-  if (val === null || val === undefined) return 0;
-  if (typeof val === "number") return val;
-
-  // Handle nested structures like interviewing.total or offers.offer_released.total
-  if (typeof val === "object" && val !== null) {
-    return val?.total ?? val?.value ?? 0;
-  }
-
-  return Number(val) || 0;
-};
-
-const formatMonthLabel = (label) => {
-  const [year, month] = label.split("-");
-  // The "All time" period filter collapses the trend into a single
-  // "all" bucket instead of a "YYYY-MM" month — nothing to parse as a date.
-  if (!month) return "All";
-  return new Date(year, month - 1).toLocaleString("default", { month: "short" });
-};
-
-const sortJobsByDate = (jobs) =>
-  [...jobs].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-const mapJobData = (jobData) =>
-  jobData.map((item, index) => ({
-    id: item.job_position_id || item.job_details_id || `job-${index}`,
-    job_details_id: item.job_details_id,
-    title: item.job_title || "Unknown Job",
-    location: item.country || "N/A",
-    status: item.status
-      ? item.status.charAt(0).toUpperCase() + item.status.slice(1)
-      : "N/A",
-    color: item.status?.toLowerCase() === "closed" ? CHART_COLORS.closed : CHART_COLORS.open,
-    created_at: item.created_at,
-    sub_function: item.sub_function || "",
-  }));
-
-// ── Chart data builders (Recharts-shaped: array of row objects) ────────────
-const createInterviewChartData = (trend) => {
-  const labels = (trend.labels || []).map(formatMonthLabel);
-  const scheduled = trend.interview_scheduled || [];
-  const rescheduled = trend.interview_rescheduled || [];
-  // Backend sometimes returns an aggregate { total } instead of a per-month array —
-  // in that case there's no real monthly breakdown, so surface the total on the
-  // most recent month rather than fabricating a trend across every month.
-  const completedRaw = trend.interview_completed;
-  const completed = Array.isArray(completedRaw)
-    ? completedRaw
-    : labels.map((_, i) => (i === labels.length - 1 ? (completedRaw?.total || 0) : 0));
-  const cancelled = trend.interview_cancelled || [];
-
-  return labels.map((label, i) => ({
-    label,
-    scheduled: scheduled[i] || 0,
-    rescheduled: rescheduled[i] || 0,
-    completed: completed[i] || 0,
-    cancelled: cancelled[i] || 0,
-  }));
-};
-
-const createPipelineTrendData = (trend = {}) => {
-  const labels = (trend.labels || []).map(formatMonthLabel);
-  const stages = ["matched", "shortlisted", "interviewing", "selected", "offers", "onboarded"];
-  return labels.map((label, index) => stages.reduce(
-    (row, stage) => ({ ...row, [stage]: Array.isArray(trend[stage]) ? trend[stage][index] || 0 : 0 }),
-    { label },
-  ));
-};
-
-const createOfferTrendData = (trend = {}) => {
-  const labels = (trend.labels || []).map(formatMonthLabel);
-  const fields = ["offer_released", "offer_accepted", "offer_rejected", "offer_revoked"];
-  return labels.map((label, index) => fields.reduce(
-    (row, f) => ({ ...row, [f]: Array.isArray(trend[f]) ? trend[f][index] || 0 : 0 }),
-    { label },
-  ));
-};
-
-// ── Donut data builders ─────────────────────────────────────────────────────
-const buildExperienceDonutData = (experience = {}) => {
-  const buckets = [
-    { key: "0-2_years", name: "0–2 yrs", color: "#174FDF" },
-    { key: "3-5_years", name: "3–5 yrs", color: "#0571ED" },
-    { key: "6-10_years", name: "6–10 yrs", color: "#0097A7" },
-    { key: "10+_years", name: "10+ yrs", color: "#00BBD4" },
-  ];
-  return buckets.map((b) => ({ name: b.name, value: experience?.[b.key] || 0, color: b.color }));
-};
-
-const buildOfferBreakdownData = (summary) => [
-  { name: "Accepted", value: getSafeCount(summary, "candidate_stage_breakdown.offers.offer_released.offer_accepted"), color: CHART_COLORS.offerAccepted },
-  { name: "Rejected", value: getSafeCount(summary, "candidate_stage_breakdown.offers.offer_released.offer_rejected"), color: CHART_COLORS.offerRejected },
-  { name: "Revoked", value: getSafeCount(summary, "candidate_stage_breakdown.offers.offer_released.offer_revoked"), color: CHART_COLORS.offerRevoked },
-];
-
-const INTERVIEW_BAR_FIELDS = [
-  { key: "interview_scheduled", label: "Scheduled", color: "#FFC107" },
-  { key: "interview_rescheduled", label: "Rescheduled", color: COLORS.skyBlue },
-  { key: "interview_completed", label: "Completed", color: CHART_COLORS.interviewPassed },
-  { key: "interview_cancelled", label: "Cancelled", color: CHART_COLORS.interviewCancelled },
-];
-
-const FUNNEL_BAR_FIELDS = [
-  { key: "matched", label: "Matched", color: CHART_COLORS.matched },
-  { key: "shortlisted", label: "Shortlisted", color: CHART_COLORS.shortlisted },
-  { key: "interviewing", label: "Interview", color: CHART_COLORS.interviewing },
-  { key: "onboarded", label: "Onboarded", color: CHART_COLORS.onboarded },
-];
-
-const OFFER_BAR_FIELDS = [
-  { key: "offer_released", label: "Released", color: CHART_COLORS.offerReleased },
-  { key: "offer_accepted", label: "Accepted", color: CHART_COLORS.offerAccepted },
-  { key: "offer_rejected", label: "Rejected", color: CHART_COLORS.offerRejected },
-  { key: "offer_revoked", label: "Revoked", color: CHART_COLORS.offerRevoked },
-];
-
-const buildBarSeriesData = (trend = {}, fields) =>
-  fields.map(({ key, label, color }) => {
-    const raw = trend?.[key];
-    const value = Array.isArray(raw) ? (raw[raw.length - 1] || 0) : (raw?.total ?? raw ?? 0);
-    return { name: label, value, color };
-  });
-
-const getSparkValues = (config, summary) => {
-  switch (config.title) {
-    case "Total Jobs":
-      return {
-        values: Object.values(summary?.job_overview?.total_jobs?.breakdown || {}),
-        labels: Object.keys(summary?.job_overview?.total_jobs?.breakdown || {}),
-      };
-    case "Open Jobs":
-      return {
-        values: Object.values(summary?.job_overview?.open_jobs?.breakdown || {}),
-        labels: Object.keys(summary?.job_overview?.open_jobs?.breakdown || {}),
-      };
-    case "Closed Jobs":
-      return {
-        values: Object.values(summary?.job_overview?.closed_jobs?.breakdown || {}),
-        labels: Object.keys(summary?.job_overview?.closed_jobs?.breakdown || {}),
-      };
-    case "Onboarded Candidates": {
-      // onboarded_trend.breakdown is month-keyed regardless of period filter
-      // and should be used whenever the backend provides it.
-      const breakdown = summary?.onboarded_trend?.breakdown;
-      if (breakdown && Object.keys(breakdown).length > 0) {
-        const months = Object.keys(breakdown).sort();
-        return { values: months.map((m) => breakdown[m]), labels: months };
-      }
-      return {
-        values: summary?.candidate_funnel_trend?.onboarded || [],
-        labels: summary?.candidate_funnel_trend?.labels || [],
-      };
-    }
-    default:
-      return { values: [], labels: [] };
-  }
-};
-
-const MiniTotalBar = ({ color, width, height, value = 0 }) => {
-  const size = Math.max(36, Math.min(height, width));
+const Toggle = ({
+  value,
+  onChange,
+  options,
+  small = false,
+}) => {
   return (
-    <Box sx={{ width, height, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <Box
-        sx={{
-          width: size, height: size, borderRadius: "50%", p: "3px", flexShrink: 0,
-          background: `conic-gradient(${color} 0deg 360deg)`,
-          boxShadow: `0 3px 10px ${color}4D`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}
-      >
-        <Box sx={{ width: "100%", height: "100%", borderRadius: "50%", bgcolor: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Typography sx={{ fontSize: size > 46 ? 14 : 12, fontWeight: 800, color, lineHeight: 1 }}>{value}</Typography>
-        </Box>
-      </Box>
-    </Box>
-  );
-};
-
-// ── Primary stat card ────────────────────────────────────────────────────
-const PrimaryStatCard = ({ config, count, loading, sparkValues, onClick }) => {
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up("xl"));
-  const sparkWidth = isDesktop ? 130 : 72;
-  const sparkHeight = isDesktop ? 56 : 46;
-
-  return (
-    <StatCard
-      accent={config.accent}
-      onClick={onClick}
+    <Box
       sx={{
-        height: "100%",
-        boxSizing: "border-box",
-        py: 1.75,
-        cursor: onClick ? "pointer" : "default",
-        transition: "transform 0.15s, box-shadow 0.15s",
-        "&:hover": onClick ? { transform: "translateY(-2px)", boxShadow: "0 6px 18px rgba(23,79,223,0.16)" } : {},
-      }}
-    >
-      <Box>
-        <Typography sx={{ fontSize: 13, color: COLORS.textSecondary, fontWeight: 600, mb: 0.4 }}>
-          {config.title}
-        </Typography>
-        {loading ? (
-          <Skeleton width={56} height={34} />
-        ) : (
-          <Typography sx={{ fontSize: 26, fontWeight: 800, color: COLORS.textPrimary, lineHeight: 1.1 }}>
-            {count}
-          </Typography>
-        )}
-      </Box>
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-        {(sparkValues?.values?.length || 0) > 1 ? (
-          <Sparkline
-            values={sparkValues?.values || []}
-            labels={sparkValues?.labels || []}
-            color={config.sparkColor || config.iconColor}
-            uid={config.title}
-            width={sparkWidth}
-            height={sparkHeight}
-          />
-        ) : (
-          <MiniTotalBar color={config.sparkColor || config.iconColor} width={sparkWidth} height={sparkHeight} value={count} />
-        )}
-      </Box>
-    </StatCard>
-  );
-};
-
-// ── Search field ───────────────────────────────────────────────────────────
-const SearchField = ({ searchTerm, onChange, onClear, classes }) => (
-  <TextField
-    variant="outlined"
-    placeholder="Search..."
-    value={searchTerm}
-    onChange={onChange}
-    size="small"
-    InputProps={{
-      endAdornment: (
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <SearchIcon sx={{ fontSize: "16px", color: COLORS.textMuted, mr: searchTerm ? 0.5 : 0 }} />
-          {searchTerm && (
-            <IconButton size="small" onClick={onClear}>
-              <CloseIcon sx={{ fontSize: "14px" }} />
-            </IconButton>
-          )}
-        </Box>
-      ),
-      sx: {
-        borderRadius: "8px", height: "32px", fontSize: "12px",
-        backgroundColor: COLORS.bgPage,
-        "& .MuiOutlinedInput-notchedOutline": { borderColor: COLORS.border },
-        width: 180,
-      },
-    }}
-    className={classes.searchInput}
-  />
-);
-
-// ── Job list row ───────────────────────────────────────────────────────────
-const JobList = ({ jobs, onViewJob }) => (
-  <Box>
-    {jobs.map((job, index) => {
-      const isClosed = job.status.toLowerCase() === "closed";
-      return (
-        <JobItem key={`${job.id || "job"}-${job.job_details_id || index}`}>
-          <Box display="flex" alignItems="center" gap={1}>
-            <Box
-              sx={{
-                width: 32, height: 32, borderRadius: "8px",
-                bgcolor: isClosed ? "#FFF0F3" : "#EEF2FF",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}
-            >
-              <CasesOutlinedIcon sx={{ fontSize: 16, color: isClosed ? CHART_COLORS.closed : COLORS.royalBlue }} />
-            </Box>
-            <Box>
-              <Typography sx={{ color: COLORS.textPrimary, fontSize: "13px", fontWeight: 700 }}>
-                {job.title}
-              </Typography>
-              <Typography sx={{ color: COLORS.textMuted, fontSize: "11px" }}>
-                {job?.id?.toUpperCase()} • {job?.location}
-              </Typography>
-            </Box>
-          </Box>
-          <Box display="flex" alignItems="center" gap={1}>
-            <StatusChip color={job.color} label={job.status} size="small" />
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => onViewJob(job)}
-              sx={{
-                borderRadius: "20px", fontSize: "11px", py: 0.3, px: 1.5,
-                borderColor: COLORS.border, color: COLORS.royalBlue,
-                "&:hover": { borderColor: COLORS.royalBlue, bgcolor: "#EEF2FF" },
-              }}
-            >
-              View
-            </Button>
-          </Box>
-        </JobItem>
-      );
-    })}
-  </Box>
-);
-const humanize = (s = "") =>
-  s.replace(/_/g, " ").split(" ").filter(Boolean).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-const CANDIDATE_STAGE_META = {
-  matched: { ...Dashboard_STATUS_COLORS.matched, label: "Matched" },
-  shortlisted: { ...Dashboard_STATUS_COLORS.shortlisted, label: "Shortlisted" },
-  interview_scheduled: { ...Dashboard_STATUS_COLORS.interviewing, label: "Interview Scheduled" },
-  interview_completed: { ...Dashboard_STATUS_COLORS.interviewing, label: "Interview Completed" },
-  interview_rescheduled: { ...Dashboard_STATUS_COLORS.interviewing, label: "Interview Rescheduled" },
-  interview_cancelled: { ...Dashboard_STATUS_COLORS.interviewing, label: "Interview Cancelled" },
-  interview_no_show: { ...Dashboard_STATUS_COLORS.interviewing, label: "No Show" },
-  interview_not_conducted: { ...Dashboard_STATUS_COLORS.interviewing, label: "Not Conducted" },
-  selected: { ...Dashboard_STATUS_COLORS.selected, label: "Selected" },
-  offer_released: { ...Dashboard_STATUS_COLORS.offer_released, label: "Offer Released" },
-  offer_accepted: { ...Dashboard_STATUS_COLORS.offer_accepted, label: "Offer Accepted" },
-  offer_rejected: { ...Dashboard_STATUS_COLORS.offer_rejected, label: "Offer Rejected" },
-  offer_revoked: { ...Dashboard_STATUS_COLORS.offer_revoked, label: "Offer Revoked" },
-  rejected: { ...Dashboard_STATUS_COLORS.rejected, label: "Rejected" },
-  onboarded: { ...Dashboard_STATUS_COLORS.onboarded, label: "Onboarded" },
-};
-const PIPELINE_STEPS = [
-  { key: "matched", label: "Matched", color: Dashboard_STATUS_COLORS.matched.color },
-  { key: "shortlisted", label: "Shortlisted", color: Dashboard_STATUS_COLORS.shortlisted.color },
-  { key: "interviewing", label: "Interview", color: Dashboard_STATUS_COLORS.interviewing.color },
-  { key: "selected", label: "Selected", color: Dashboard_STATUS_COLORS.selected.color },
-  { key: "offers", label: "Offers", color: Dashboard_STATUS_COLORS.offer_released.color },
-  { key: "onboarded", label: "Onboarded", color: Dashboard_STATUS_COLORS.onboarded.color },
-];
-const getInterviewRounds = (interviewing) => {
-  if (!interviewing) return [];
-  return Array.isArray(interviewing) ? interviewing : [interviewing];
-};
-const getCandidateLatestStageDate = (c) => {
-  let latest = 0;
-  const consider = (iso) => {
-    const t = iso ? new Date(iso).getTime() : 0;
-    if (t > latest) latest = t;
-  };
-  (c.jobs || []).forEach((job) => {
-    ["matched", "shortlisted", "selected", "offers", "onboarded"].forEach((key) => consider(job[key]?.staged_at));
-    getInterviewRounds(job.interviewing).forEach((round) => {
-      (round.stage_transitions || []).forEach((t) => consider(t.staged_at));
-    });
-  });
-  return latest;
-};
-
-const buildJobMilestones = (job) => {
-  const rounds = getInterviewRounds(job.interviewing);
-  return PIPELINE_STEPS.map((step) => {
-    if (step.key === "interviewing") {
-      return { ...step, reached: rounds.length > 0, rounds };
-    }
-    const data = job[step.key];
-    return { ...step, reached: Boolean(data), data };
-  });
-};
-
-const INTERVIEW_STATUS_META = INTERVIEW_ROUND_STATUS_COLORS;
-
-const PipelineStepper = ({ milestones }) => (
-  <Box sx={{ overflowX: "auto", mt: 1 }}>
-    <Box sx={{ display: "flex", alignItems: "flex-start", minWidth: 320 }}>
-      {milestones.map((m, idx) => {
-        const tooltip = m.key === "interviewing"
-          ? (m.rounds.length ? `${m.rounds.length} interview round${m.rounds.length === 1 ? "" : "s"}` : "Not started yet")
-          : m.data?.staged_at
-            ? `${new Date(m.data.staged_at).toLocaleString()}${m.data.triggered_by_name ? ` · ${m.data.triggered_by_name}` : ""}`
-            : "Not reached yet";
-        return (
-          <React.Fragment key={m.key}>
-            <MuiTooltip arrow title={tooltip}>
-              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", width: 58, flexShrink: 0 }}>
-                <Box
-                  sx={{
-                    width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    bgcolor: m.reached ? m.color : "#fff",
-                    border: `2px solid ${m.reached ? m.color : COLORS.border}`,
-                  }}
-                >
-                  {m.reached && <CheckRoundedIcon sx={{ fontSize: 12, color: "#fff" }} />}
-                </Box>
-                <Typography
-                  sx={{
-                    fontSize: 9.5, fontWeight: m.reached ? 700 : 500, mt: 0.4, textAlign: "center", lineHeight: 1.2,
-                    color: m.reached ? m.color : COLORS.textMuted,
-                  }}
-                >
-                  {m.label}
-                </Typography>
-              </Box>
-            </MuiTooltip>
-            {idx < milestones.length - 1 && (
-              <Box sx={{
-                flex: 1, height: 2, mt: "9px", minWidth: 12,
-                bgcolor: m.reached && milestones[idx + 1].reached ? milestones[idx + 1].color : COLORS.border,
-              }} />
-            )}
-          </React.Fragment>
-        );
-      })}
-    </Box>
-  </Box>
-);
-const StageCandidateRow = React.memo(function StageCandidateRow({ candidate: c, index: i, navigate }) {
-  const avatarColors = ["#174FDF", "#0097A7", "#673AB7", "#E65100", "#0571ED"];
-  const jobsList = c.jobs || [];
-  const latestTs = getCandidateLatestStageDate(c);
-  const latestDateLabel = latestTs
-    ? new Date(latestTs).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
-    : "—";
-  const jobCount = jobsList.length || c.job_count || 0;
-  const metaLine = [c.designation, c.total_experience].filter(Boolean).join(" · ");
-
-  return (
-    <Accordion
-      disableGutters
-      elevation={0}
-      square
-      sx={{
-        border: `1px solid ${COLORS.border}`,
-        borderRadius: "10px !important",
-        mb: 1,
-        "&:before": { display: "none" },
+        display: "inline-flex",
+        alignItems: "center",
+        background: "#F1F5F9",
+        borderRadius: "9px",
+        padding: "2px",
+        flexShrink: 0,
+        maxWidth: "100%",
         overflow: "hidden",
       }}
     >
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon sx={{ fontSize: 18 }} />}
-        sx={{
-          px: 1.5, minHeight: 56,
-          "& .MuiAccordionSummary-content": { alignItems: "center", my: 0.75, minWidth: 0, gap: 1.25 },
-          "&:hover": { bgcolor: "#f8f9ff" },
+      {options.map((item) => {
+        const active = value === item.value;
+
+        return (
+          <Box
+            key={item.value}
+            component="button"
+            type="button"
+            onClick={() => onChange(item.value)}
+            sx={{
+              border: 0,
+              outline: 0,
+              appearance: "none",
+              px: small ? 1.5 : 2.6,
+              py: small ? 0.55 : 0.75,
+              borderRadius: "7px",
+              cursor: "pointer",
+              fontFamily: "inherit",
+              fontSize: small ? 11.5 : 13,
+              fontWeight: 600,
+              color: active
+                ? "#fff"
+                : COLORS.textSecondary,
+              background: active
+                ? COLORS.blue
+                : "transparent",
+              whiteSpace: "nowrap",
+              transition: "all .15s ease",
+
+              "&:hover": {
+                background: active
+                  ? COLORS.blue
+                  : "#E8EEF8",
+              },
+            }}
+          >
+            {item.label}
+          </Box>
+        );
+      })}
+    </Box>
+  );
+};
+
+// ============================================================
+// FILTER
+// ============================================================
+
+const Filter = ({ children }) => {
+  return (
+    <Box
+      sx={{
+        height: 38,
+        px: 2,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 1,
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: "10px",
+        background: "#fff",
+        color: COLORS.textSecondary,
+        fontSize: 13,
+        whiteSpace: "nowrap",
+        flexShrink: 0,
+        cursor: "pointer",
+      }}
+    >
+      <span>{children}</span>
+
+      <span
+        style={{
+          fontSize: 10,
+          color: COLORS.textSecondary,
         }}
       >
-        <Box sx={{
-          width: 36, height: 36, borderRadius: "50%",
-          bgcolor: avatarColors[i % avatarColors.length],
-          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-        }}>
-          <Typography sx={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>
-            {c.candidate_name?.trim()?.charAt(0)?.toUpperCase() || String(c.clin_id || "00").slice(-2)}
-          </Typography>
-        </Box>
-
-        <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, flexWrap: "wrap" }}>
-            <Typography sx={{ fontSize: 13.5, fontWeight: 600, color: COLORS.textPrimary, flexShrink: 0 }}>
-              CLIN{c.clin_id}
-            </Typography>
-            {c.candidate_name && (
-              <Typography sx={{ fontSize: 12, fontWeight: 600, color: COLORS.royalBlue, minWidth: 0 }} noWrap>
-                {c.candidate_name}
-              </Typography>
-            )}
-            {!c.is_active && (
-              <Chip label="Inactive" size="small" sx={{ height: 16, fontSize: 9, bgcolor: "#FFEBEE", color: "#D32F2F", flexShrink: 0 }} />
-            )}
-          </Box>
-          <Typography sx={{ fontSize: 11, color: COLORS.textSecondary, mt: 0.1 }} noWrap>
-            {metaLine || "—"}
-          </Typography>
-        </Box>
-
-        <Chip
-          label={`${jobCount} job${jobCount === 1 ? "" : "s"}`}
-          size="small"
-          sx={{ height: 22, fontSize: 10.5, fontWeight: 700, bgcolor: "#EEF3FF", color: COLORS.royalBlue, flexShrink: 0, mr: 0.5 }}
-        />
-      </AccordionSummary>
-
-      {/* Jobs this candidate is in the current stage for — each with its
-          own pipeline progress, since the same clin_id can be at a
-          different point of the funnel on each job opening. Contact
-          details live on the candidate now, so they're shown once here
-          rather than repeated per job. */}
-      <AccordionDetails sx={{ p: 0, borderTop: `1px solid ${COLORS.border}`, bgcolor: "#FAFBFF" }}>
-        {(c.email || c.phone_number) && (
-          <Box sx={{ px: 2, py: 1, borderBottom: `1px solid ${COLORS.border}`, display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
-            {/* The API already redacts email/phone in-place (e.g. "d***2@gmail.com")
-                when pii_masked is true — show that string as-is rather than hiding
-                it behind a placeholder, and just flag it with a small icon. */}
-            {c.email && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.4, minWidth: 0 }}>
-                <EmailOutlinedIcon sx={{ fontSize: 12, color: COLORS.textMuted, flexShrink: 0 }} />
-                <Typography sx={{ fontSize: 10.5, color: COLORS.textSecondary }} noWrap>{c.email}</Typography>
-              </Box>
-            )}
-            {c.phone_number && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.4 }}>
-                <LocalPhoneOutlinedIcon sx={{ fontSize: 12, color: COLORS.textMuted, flexShrink: 0 }} />
-                <Typography sx={{ fontSize: 10.5, color: COLORS.textSecondary }}>{c.phone_number}</Typography>
-              </Box>
-            )}
-            {c.pii_masked && (
-              <MuiTooltip arrow title="Contact details are partially masked">
-                <VisibilityOffOutlinedIcon sx={{ fontSize: 12, color: COLORS.textMuted }} />
-              </MuiTooltip>
-            )}
-          </Box>
-        )}
-
-        {jobsList.map((job, ji) => {
-          const stageMeta = CANDIDATE_STAGE_META[job.current_stage];
-          const milestones = buildJobMilestones(job);
-          const rounds = [...getInterviewRounds(job.interviewing)].sort(
-            (a, b) => new Date(`${a.date || ""}T${a.start_time || "00:00:00"}`) - new Date(`${b.date || ""}T${b.start_time || "00:00:00"}`)
-          );
-
-          return (
-            <Box
-              key={job.job_details_id || ji}
-              sx={{
-                px: 2, py: 1.5,
-                borderBottom: ji < jobsList.length - 1 ? `1px solid ${COLORS.border}` : "none",
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1 }}>
-                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, minWidth: 0 }}>
-                  <CasesOutlinedIcon sx={{ fontSize: 16, color: COLORS.royalBlue, mt: 0.2, flexShrink: 0 }} />
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography sx={{ fontSize: 12.5, fontWeight: 600, color: COLORS.textPrimary }} noWrap>
-                      {job.job_title || "Untitled role"}
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.6, flexWrap: "wrap", mt: 0.2 }}>
-                      {job.job_position_id && (
-                        <Typography sx={{ fontSize: 10.5, color: COLORS.textMuted }}>
-                          {job.job_position_id.toUpperCase()}
-                        </Typography>
-                      )}
-                      {job.job_country && (
-                        <>
-                          <Typography sx={{ fontSize: 10.5, color: COLORS.textMuted }}>·</Typography>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
-                            <PublicOutlinedIcon sx={{ fontSize: 11, color: COLORS.textMuted }} />
-                            <Typography sx={{ fontSize: 10.5, color: COLORS.textMuted }}>{job.job_country}</Typography>
-                          </Box>
-                        </>
-                      )}
-                      {job.sub_function && (
-                        <>
-                          <Typography sx={{ fontSize: 10.5, color: COLORS.textMuted }}>·</Typography>
-                          <Typography sx={{ fontSize: 10.5, color: COLORS.textMuted }}>{humanize(job.sub_function)}</Typography>
-                        </>
-                      )}
-                    </Box>
-                  </Box>
-                </Box>
-
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, flexShrink: 0 }}>
-                  {job.current_stage && (
-                    <Chip
-                      label={stageMeta?.label || humanize(job.current_stage)}
-                      size="small"
-                      sx={{
-                        height: 22, fontSize: 10, fontWeight: 700,
-                        bgcolor: stageMeta?.bg || "#F5F5F5",
-                        color: stageMeta?.color || COLORS.textSecondary,
-                      }}
-                    />
-                  )}
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => navigate("/recruit/requisitions/Job-details", {
-                      state: {
-                        job_details_id: job.job_details_id,
-                        matched_candidate_id: job.matched_candidate_id || c.candidate_id,
-                        fromDashboard: true,
-                      },
-                    })}
-                    sx={{
-                      borderRadius: "20px", fontSize: "11px", py: 0.3, px: 1.75, flexShrink: 0,
-                      borderColor: COLORS.border, color: COLORS.royalBlue,
-                      "&:hover": { borderColor: COLORS.royalBlue, bgcolor: "#EEF2FF" },
-                    }}
-                  >
-                    View
-                  </Button>
-                </Box>
-              </Box>
-
-              {/* Pipeline progress — factual "reached" state per stage,
-                  independent of the (possibly "rejected") current_stage
-                  chip shown above. */}
-              <PipelineStepper milestones={milestones} />
-
-              {/* Individual interview rounds, chronological */}
-              {rounds.length > 0 && (
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.6, mt: 1.1 }}>
-                  {rounds.map((round, ri) => {
-                    const statusMeta = INTERVIEW_STATUS_META[(round.status || "").toLowerCase()] || { color: COLORS.textSecondary, bg: "#F5F5F5" };
-                    const stepName = round.interview_step_name?.trim() || `Round ${round.interview_step_number || ri + 1}`;
-                    const dateLabel = round.date
-                      ? new Date(round.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })
-                      : "—";
-                    const timeLabel = round.start_time
-                      ? `${round.start_time.slice(0, 5)}–${round.end_time?.slice(0, 5) || ""}`
-                      : "";
-                    return (
-                      <MuiTooltip
-                        key={round.interview_id || ri}
-                        arrow
-                        title={
-                          <Box sx={{ fontSize: 11 }}>
-                            {round.interview_step_type && (
-                              <Box sx={{ fontWeight: 700, mb: 0.3 }}>
-                                {humanize(round.interview_step_type)}{round.is_final ? " · Final round" : ""}
-                              </Box>
-                            )}
-                            {round.date && (
-                              <Box>
-                                {new Date(round.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
-                                {timeLabel ? ` · ${timeLabel}` : ""}
-                              </Box>
-                            )}
-                            {(round.stage_transitions || []).map((t, ti) => (
-                              <Box key={ti} sx={{ mt: 0.3, opacity: 0.85 }}>
-                                {humanize(t.stage)} — {t.staged_at ? new Date(t.staged_at).toLocaleString() : "—"}
-                                {t.triggered_by_name ? ` by ${t.triggered_by_name}` : ""}
-                              </Box>
-                            ))}
-                          </Box>
-                        }
-                      >
-                        <Chip
-                          label={`${stepName}${round.is_final ? " ★" : ""} · ${round.status || "—"} · ${dateLabel}`}
-                          size="small"
-                          sx={{
-                            height: 22, fontSize: 10, fontWeight: 600,
-                            bgcolor: statusMeta.bg,
-                            color: statusMeta.color,
-                          }}
-                        />
-                      </MuiTooltip>
-                    );
-                  })}
-                </Box>
-              )}
-            </Box>
-          );
-        })}
-      </AccordionDetails>
-    </Accordion>
+        ▼
+      </span>
+    </Box>
   );
-});
-const CountsToggle = ({ value, onChange }) => (
-  <MuiTooltip
-    arrow
-    placement="top"
-    title={
-      <Box sx={{ p: 0.5, maxWidth: 220 }}>
-        <Typography sx={{ fontSize: 11, lineHeight: 1.5 }}>
-          <b>Cumulative</b>: Total candidates who have reached this stage at any point in the hiring process.<br />
-          <b>Current</b>: Candidates currently in this stage.
-        </Typography>
-      </Box>
+};
+
+// ============================================================
+// SUB FUNCTION DROPDOWN
+// ============================================================
+
+const SubFunctionDropdown = ({
+  value,
+  onChange,
+}) => {
+  return (
+    <Select
+      value={value}
+      onChange={(event) => {
+        onChange(event.target.value);
+      }}
+      displayEmpty
+      size="small"
+      sx={{
+        minWidth: {
+          xs: 220,
+          sm: 250,
+          md: 285,
+        },
+
+        height: 42,
+        background: "#fff",
+        borderRadius: "10px",
+        fontSize: 16,
+        color: "#29313D",
+        flexShrink: 0,
+
+        "& .MuiSelect-select": {
+          display: "flex",
+          alignItems: "center",
+          py: 1,
+          px: 1.7,
+          pr: 5,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        },
+
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: COLORS.border,
+          borderWidth: 1,
+        },
+
+        "&:hover .MuiOutlinedInput-notchedOutline": {
+          borderColor: COLORS.blue,
+        },
+
+        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+          borderColor: COLORS.blue,
+          borderWidth: 2,
+        },
+
+        "& .MuiSelect-icon": {
+          color: "#777",
+        },
+      }}
+      MenuProps={{
+        PaperProps: {
+          sx: {
+            mt: 0.5,
+            borderRadius: "0 0 8px 8px",
+            boxShadow:
+              "0 4px 12px rgba(0,0,0,0.18)",
+            maxHeight: 360,
+
+            "& .MuiMenuItem-root": {
+              minHeight: 58,
+              fontSize: 16,
+              color: "#29313D",
+              px: 3,
+
+              "&.Mui-selected": {
+                backgroundColor: "#EEF2FA",
+              },
+
+              "&.Mui-selected:hover": {
+                backgroundColor: "#E8EDF7",
+              },
+
+              "&:hover": {
+                backgroundColor: "#F5F7FA",
+              },
+            },
+          },
+        },
+      }}
+    >
+      {SUB_FUNCTION_OPTIONS.map((option) => (
+        <MenuItem
+          key={option.value}
+          value={option.value}
+        >
+          {option.label}
+        </MenuItem>
+      ))}
+    </Select>
+  );
+};
+
+// ============================================================
+// SPARKLINE
+// ============================================================
+
+const Sparkline = ({
+  values = [],
+  color = COLORS.blue,
+}) => {
+  const width = 120;
+  const height = 46;
+
+  const safeValues =
+    Array.isArray(values) &&
+    values.length > 0
+      ? values
+      : [0];
+
+  const max = Math.max(
+    ...safeValues,
+    1
+  );
+
+  const min = Math.min(
+    ...safeValues,
+    0
+  );
+
+  const range =
+    max - min || 1;
+
+  const points = safeValues.map(
+    (value, index) => {
+      const x =
+        safeValues.length === 1
+          ? width / 2
+          : index *
+            (width /
+              (safeValues.length - 1));
+
+      const y =
+        height -
+        ((value - min) /
+          range) *
+          (height - 10) -
+        5;
+
+      return [x, y];
     }
-  >
-    <Box sx={{
-      display: "flex", alignItems: "center", bgcolor: COLORS.bgPage,
-      borderRadius: "20px", p: "2px", border: `1px solid ${COLORS.border}`,
-    }}>
-      {[
-        { value: "cumulative", label: "Cumulative" },
-        { value: "current", label: "Current" },
-      ].map((opt) => (
+  );
+
+  const path = points.reduce(
+    (acc, point, index, arr) => {
+      if (index === 0) {
+        return `M ${point[0]} ${point[1]}`;
+      }
+
+      const previous =
+        arr[index - 1];
+
+      const middleX =
+        (previous[0] + point[0]) / 2;
+
+      return `${acc} C ${middleX} ${previous[1]}, ${middleX} ${point[1]}, ${point[0]} ${point[1]}`;
+    },
+    ""
+  );
+
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      style={{
+        display: "block",
+        maxWidth: "100%",
+        overflow: "hidden",
+      }}
+    >
+      <path
+        d={path}
+        fill="none"
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      {points.map(
+        ([x, y], index) => (
+          <circle
+            key={index}
+            cx={x}
+            cy={y}
+            r="3.5"
+            fill={color}
+          />
+        )
+      )}
+    </svg>
+  );
+};
+
+// ============================================================
+// GRAPH LEGEND
+// ============================================================
+
+const GraphLegend = () => {
+  const items = [
+    {
+      label: "Open",
+      color: COLORS.open,
+    },
+    {
+      label: "Closed",
+      color: COLORS.closed,
+    },
+    {
+      label: "Hold",
+      color: COLORS.hold,
+    },
+  ];
+
+  return (
+    <Box
+      sx={{
+        width: "100%",
+        minWidth: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: {
+          xs: 0.35,
+          sm: 0.65,
+        },
+        overflow: "hidden",
+      }}
+    >
+      {items.map((item) => (
         <Box
-          key={opt.value}
-          onClick={() => onChange(opt.value)}
+          key={item.label}
           sx={{
-            px: 1.5, py: 0.4, borderRadius: "18px", cursor: "pointer",
-            fontSize: 11, fontWeight: 600, textTransform: "capitalize",
-            color: value === opt.value ? "#fff" : COLORS.textSecondary,
-            bgcolor: value === opt.value ? COLORS.royalBlue : "transparent",
-            transition: "background-color 0.15s, color 0.15s",
+            minWidth: 0,
+            display: "flex",
+            alignItems: "center",
+            gap: 0.35,
           }}
         >
-          {opt.label}
+          <Box
+            sx={{
+              width: 8,
+              height: 8,
+              minWidth: 8,
+              borderRadius: "50%",
+              background: item.color,
+            }}
+          />
+
+          <Typography
+            sx={{
+              fontSize: 9.5,
+              color: COLORS.textSecondary,
+              lineHeight: 1,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {item.label}
+          </Typography>
         </Box>
       ))}
     </Box>
-  </MuiTooltip>
-);
-const ViewToggle = ({ value, onChange }) => (
-  <Box sx={{
-    display: "flex", alignItems: "center", bgcolor: COLORS.bgPage,
-    borderRadius: "20px", p: "2px", border: `1px solid ${COLORS.border}`,
-  }}>
-    {[
-      { value: "organisation", label: "All Users" },
-      { value: "user", label: "Current User" },
-    ].map((opt) => (
-      <Box
-        key={opt.value}
-        onClick={() => onChange(opt.value)}
-        sx={{
-          px: 1.5, py: 0.4, borderRadius: "18px", cursor: "pointer",
-          fontSize: 11, fontWeight: 600,
-          color: value === opt.value ? "#fff" : COLORS.textSecondary,
-          bgcolor: value === opt.value ? COLORS.royalBlue : "transparent",
-          transition: "background-color 0.15s, color 0.15s",
-        }}
-      >
-        {opt.label}
-      </Box>
-    ))}
-  </Box>
-);
-const useCountUp = (target, duration = 1200, start = false) => {
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    if (!start || !target) return;
-    let startTime = null;
-    const step = (timestamp) => {
-      if (!startTime) startTime = timestamp;
-      const progress = Math.min((timestamp - startTime) / duration, 1);
-      setValue(Math.floor(progress * target));
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [target, duration, start]);
-  return value;
-};
-const STEPS = [
-  { icon: AddCircleOutlineRounded, title: "Create your first Job", desc: "Post a role and let the platform match top candidates automatically." },
-  { icon: PersonSearchOutlined, title: "Review Matched Candidates", desc: "Our AI shortlists the best-fit profiles for your role." },
-  { icon: EventAvailableOutlinedIcon, title: "Schedule Interviews", desc: "Book slots, add panel members, and track interview progress." },
-  { icon: RocketLaunchOutlined, title: "Onboard & Grow", desc: "Move candidates through the pipeline and build your dream team." },
-];
-const WelcomeToast = ({ totalJobs = 0, totalCandidates = 0, onDismiss }) => {
-  const navigate = useNavigate();
-  const [visible, setVisible] = useState(false);
-  const [confetti, setConfetti] = useState(true);
-  const [showStats, setShowStats] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-  const [autoTimerActive, setAutoTimerActive] = useState(true);
-
-  const jobCount = useCountUp(totalJobs, 900, showStats);
-  const candidateCount = useCountUp(totalCandidates, 1100, showStats);
-
-  const userName = localStorage.getItem(EMPLOYEE_NAME)
-
-  useEffect(() => {
-    const t1 = setTimeout(() => setVisible(true), 80);
-    const t2 = setTimeout(() => setConfetti(false), 2800);
-    const t3 = setTimeout(() => setShowStats(true), 350);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, []);
-
-  const handleDismiss = () => {
-    setVisible(false);
-    setTimeout(onDismiss, 320);
-  };
-
-  // Auto-dismiss after 8s — pauses while expanded or hovered
-  useEffect(() => {
-    if (!autoTimerActive || expanded) return;
-    const t = setTimeout(handleDismiss, 8000);
-    return () => clearTimeout(t);
-  }, [autoTimerActive, expanded]);
-
-  return (
-    <>
-      {confetti && (
-        <Confetti
-          width={window.innerWidth}
-          height={260}
-          numberOfPieces={90}
-          recycle={false}
-          gravity={0.2}
-          colors={["#1A56DB", "#3B82F6", "#60A5FA", "#06B6D4", "#FCD34D"]}
-          style={{ position: "fixed", top: 0, left: 0, zIndex: 1500, pointerEvents: "none" }}
-        />
-      )}
-
-      <Box
-        onMouseEnter={() => setAutoTimerActive(false)}
-        onMouseLeave={() => setAutoTimerActive(true)}
-        sx={{
-          position: "fixed",
-          top: visible ? 18 : -60,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 1400,
-          opacity: visible ? 1 : 0,
-          width: { xs: "94%", sm: 520 },
-          maxWidth: "calc(100vw - 24px)",
-          transition: "top .45s cubic-bezier(.34,1.56,.64,1), opacity .3s ease",
-        }}
-      >
-        <Box sx={{
-          borderRadius: "16px",
-          border: "1px solid #BAE6FD",
-          background: "linear-gradient(135deg,#fff 0%,#F0F9FF 60%,#E0F2FE 100%)",
-          boxShadow: "0 14px 36px rgba(14,165,233,.20), 0 4px 14px rgba(15,23,42,.08)",
-          overflow: "hidden",
-        }}>
-          {/* ── Main row ── */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, p: "12px 14px" }}>
-            <Box sx={{
-              width: 42, height: 42, borderRadius: "10px", flexShrink: 0,
-              border: "2px solid rgba(14,165,233,.3)", overflow: "hidden", bgcolor: "#fff",
-            }}>
-              {/* <Box component="img" src={ClinicalHiringLogo} alt="Clinical Hiring"
-                sx={{ width: "100%", height: "100%", objectFit: "cover" }} >
-
-              </Box> */}
-            </Box>
-
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography sx={{ fontSize: 13.5, fontWeight: 800, color: "#0F172A", lineHeight: 1.25 }}>
-                Hey {userName}! 👋 Welcome to Clinical Hiring
-              </Typography>
-              <Typography sx={{ fontSize: 11.5, color: "#64748B", mt: 0.2 }}>
-                <b style={{ color: "#1D4ED8" }}>{jobCount}</b> jobs ·{" "}
-                <b style={{ color: "#0E9F6E" }}>{candidateCount}</b> candidates ready to explore
-              </Typography>
-            </Box>
-
-            <Button
-              size="small"
-              onClick={() => setExpanded((p) => !p)}
-              sx={{ fontSize: 11, fontWeight: 600, color: "#0369A1", minWidth: 0, px: 1, whiteSpace: "nowrap" }}
-            >
-              {expanded ? "Hide" : "Get started"}
-            </Button>
-
-            <IconButton
-              size="small"
-              onClick={handleDismiss}
-              sx={{
-                width: 26, height: 26, color: "#64748B",
-                "&:hover": { bgcolor: "rgba(220,38,38,.08)", color: "#DC2626" },
-              }}
-            >
-              <CloseIcon sx={{ fontSize: 14 }} />
-            </IconButton>
-          </Box>
-
-          {/* ── Expandable onboarding steps ── */}
-          <Box sx={{
-            maxHeight: expanded ? 280 : 0,
-            opacity: expanded ? 1 : 0,
-            overflow: "hidden",
-            transition: "max-height .35s ease, opacity .25s ease",
-            borderTop: expanded ? "1px solid rgba(15,23,42,.08)" : "none",
-          }}>
-            <Box sx={{ p: "14px", display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(4,1fr)" }, gap: 1 }}>
-              {STEPS.map((step, i) => {
-                const StepIcon = step.icon;
-                return (
-                  <Box key={i} sx={{ borderRadius: "10px", p: "10px", bgcolor: "#fff", border: "1px solid rgba(15,23,42,.08)" }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.7, mb: 0.6 }}>
-                      <Box sx={{
-                        width: 18, height: 18, borderRadius: "50%", bgcolor: "#0EA5E9", color: "#fff",
-                        display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700,
-                      }}>
-                        {i + 1}
-                      </Box>
-                      <StepIcon sx={{ fontSize: 14, color: "#0EA5E9" }} />
-                    </Box>
-                    <Typography sx={{ fontSize: 11, fontWeight: 700, color: "#1E293B", lineHeight: 1.3 }}>
-                      {step.title}
-                    </Typography>
-                  </Box>
-                );
-              })}
-            </Box>
-            <Box sx={{ px: "14px", pb: "14px" }}>
-              <Button
-                fullWidth
-                variant="contained"
-                size="small"
-                onClick={() => { navigate("/recruit/create-job/job-requirements"); handleDismiss(); }}
-                sx={{
-                  borderRadius: "10px", textTransform: "none", fontSize: 12.5, fontWeight: 700,
-                  background: "linear-gradient(135deg,#06B6D4,#1A56DB)", color: "#fff",
-                  "&:hover": { background: "linear-gradient(135deg,#0891B2,#1D4ED8)" },
-                }}
-              >
-                🚀 Create your first job
-              </Button>
-            </Box>
-          </Box>
-
-          {/* ── Auto-dismiss progress bar ── */}
-          {!expanded && (
-            <Box sx={{ height: 2, bgcolor: "rgba(14,165,233,.15)" }}>
-              <Box sx={{
-                height: "100%", bgcolor: "#0EA5E9",
-                animation: autoTimerActive ? "welcomeToastShrink 8s linear forwards" : "none",
-                "@keyframes welcomeToastShrink": { from: { width: "100%" }, to: { width: "0%" } },
-              }} />
-            </Box>
-          )}
-        </Box>
-      </Box>
-    </>
   );
 };
-const OrganizationOverview = ({ selectedStatus = "all" ,orgId}) => {
-  const classes = getDashboardStyles();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const globalSearchQuery = useSelector(selectGlobalSearchQuery);
 
-  console.log("OrgIDFromReqOverview...", orgId)
-  // const { userInfo } = useContext(AppContext);  // or however you get user
-  const [showWelcome, setShowWelcome] = useState(false);
+// ============================================================
+// STATUS ITEM
+// ============================================================
 
+const StatusItem = ({
+  label,
+  value,
+  color,
+  max,
+  loading = false,
+}) => {
+  const safeMax = max || 1;
 
+  const barHeight =
+    value === 0
+      ? 4
+      : Math.max(
+          5,
+          Math.min(
+            38,
+            (value / safeMax) * 38
+          )
+        );
 
-  const [activeSearchTerm, setActiveSearchTerm] = useState("");
-  const [closedSearchTerm, setClosedSearchTerm] = useState("");
-  const [activeJobs, setActiveJobs] = useState([]);
-  const [closedJobs, setClosedJobs] = useState([]);
-  const [originalActiveJobs, setOriginalActiveJobs] = useState([]);
-  const [originalClosedJobs, setOriginalClosedJobs] = useState([]);
-  const [jobsDialog, setJobsDialog] = useState({ open: false, filter: "all" });
-  const [jobsDialogSearch, setJobsDialogSearch] = useState("");
-  const [candidateSummary, setCandidateSummary] = useState({});
-  const [analyticsView, setAnalyticsView] = useState("user");
-  const [countsType, setCountsType] = useState("current");
-  const [periodCount, setPeriodCount] = useState("all");
-  const isAllTime = periodCount === "all";
-
-  const [interviewChartData, setInterviewChartData] = useState([]);
-
-  const [subFunction, setSubFunction] = useState("");  // "" = All
-  const [analyticsCountry, setAnalyticsCountry] = useState("all");
-  const [dashboardView, setDashboardView] = useState("chart"); // "chart" | "table"
-  const [stageSortOrder, setStageSortOrder] = useState("latest"); // "latest" | "oldest"
-  const [stageDialog, setStageDialog] = useState({
-    open: false,
-    stage: "",
-    data: [],
-    count: 0,
-    loading: false,
-    page: 1,
-    pageSize: 10,
-  });
-
-  const [fetchStage, { data: stageRes, isFetching: stageLoading }] = useLazyGetStageDetailsQuery();
-  const [stageSearchInput, setStageSearchInput] = useState("");
-  const [stageSearchTerm, setStageSearchTerm] = useState("");
-
-  const [exportingPdf, setExportingPdf] = useState(false);
-
-  const isNewUser = "false" // from API
-
-  const handleDismissWelcome = () => {
-    setShowWelcome(false);
-  };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setStageSearchTerm(stageSearchInput);
-    }, 250);
-    return () => clearTimeout(timer);
-  }, [stageSearchInput]);
-
-  const getLastNMonthPeriods = (n) => {
-    const periods = [];
-    const now = new Date();
-    for (let i = 0; i < n; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      periods.push(d.toISOString().slice(0, 7)); // "YYYY-MM"
-    }
-    return periods; // most recent first
-  };
-
-  const handleStageClick = async (stageKey, page = 1) => {
-    const stage = stageKey.split(".").pop();
-    const pageSize = 10;
-    setStageDialog((p) => ({ ...p, open: true, stage, data: [], loading: true, page, pageSize }));
-    setStageSearchInput("");
-    setStageSearchTerm("");
-    setStageSortOrder("latest");
-    try {
-      const stageResData = await fetchStage({
-        stage, period: "", status: "all", scope: analyticsView,
-        countsType, filterBySubfunction: subFunction, country: analyticsCountry,
-        page, pageSize,
-      }, true).unwrap();
-      const candidates = stageResData?.data?.candidates ?? [];
-
-      const total =
-        stageResData?.data?.total_count ??
-        stageResData?.data?.total ??
-        stageResData?.data?.total_records ??
-        stageResData?.total_count ??
-        stageResData?.total ??
-        stageResData?.total_records ??
-        candidates.length;
-
-      setStageDialog((p) => ({
-        ...p,
-        stage,
-        data: candidates,
-        count: total,
-        loading: false,
-        page,
-        pageSize,
-      }));
-    } catch (err) {
-      console.error("stage-details fetch failed:", err);
-      toast.error("Failed to load stage details");
-      setStageDialog((p) => ({ ...p, loading: false }));
-    }
-  };
-
-  const handleStagePageChange = (newPage) => {
-    handleStageClick(`candidate_stage_breakdown.${stageDialog.stage}`, newPage);
-  };
-
-  useEffect(() => {
-    const requestedStage = location.state?.copilotStage;
-    if (!requestedStage) return;
-    handleStageClick("candidate_stage_breakdown." + requestedStage);
-    navigate(location.pathname, { replace: true, state: {} });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.state?.copilotStage]);
-
-  useEffect(() => {
-    if (!stageDialog.open || !stageDialog.stage) return;
-    handleStageClick(`candidate_stage_breakdown.${stageDialog.stage}`, 1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [countsType, subFunction]);
-
-  const closeStageDialog = () => {
-    setStageDialog((p) => ({ ...p, open: false, page: 1, hasMore: true }));
-    setStageSearchInput("");
-    setStageSearchTerm("");
-  };
-  const normalizedStatus = selectedStatus.toLowerCase() === "all" ? "" : selectedStatus.toLowerCase();
-
-  // ── RTK queries ──────────────────────────────────────────────────────────
- const { data: res, isLoading, isFetching, refetch } = useGetJobAnalyticsV2Query(
-  {
-    organisationId: orgId,
-    groupBy: "month",
-    periodCount,
-    status: "all",
-    countsType,
-    filterBySubfunction: subFunction,
-    country: analyticsCountry,
-  },
-  { skip: !orgId }
-);
-  const { data: jobsResponse, isLoading: jobsLoading } =
-    useGetJobsListQuery({
-      status: selectedStatus === "all" ? "" : selectedStatus,
-      country: analyticsCountry, filterBySubfunction: subFunction, periodCount,
-    });
-
-  const { data: candidateDashboard, isLoading: dashboardLoading } =
-    useGetCandidateListByStatusQuery(normalizedStatus);
-
-  // ── Effects ──────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!jobsResponse?.success) return;
-    const jobs = jobsResponse?.data || [];
-    const mapped = mapJobData(_isArray(jobs) ? jobs : []);
-    const sorted = sortJobsByDate(mapped);
-    const active = sorted.filter((j) => j.status.toLowerCase() === "open");
-    const closed = sorted.filter((j) => j.status.toLowerCase() === "closed");
-    setActiveJobs(active);
-    setClosedJobs(closed);
-    setOriginalActiveJobs(active);
-    setOriginalClosedJobs(closed);
-  }, [jobsResponse]);
-
-  useEffect(() => {
-    if (!res?.success) return;
-    const summary = res?.data || {};
-    setCandidateSummary(summary);
-    if (summary.interview_analysis_trend) {
-      setInterviewChartData(createInterviewChartData(summary.interview_analysis_trend));
-    }
-  }, [res]);
-  useEffect(() => {
-    setAnalyticsView(location.pathname.includes("/dashboard/organization") ? "organisation" : "user");
-  }, [location.pathname]);
-
-  const filteredStageData = React.useMemo(() => {
-    let list = stageDialog.data;
-    if (stageSearchTerm.trim()) {
-      const q = stageSearchTerm.toLowerCase().trim();
-      list = list.filter((c) => {
-        const name = c.candidate_name || "";
-        return String(c.clin_id || "").toLowerCase().includes(q) || name.toLowerCase().includes(q);
-      });
-    }
-
-    return [...list].sort((a, b) => {
-      const da = getCandidateLatestStageDate(a);
-      const db = getCandidateLatestStageDate(b);
-      return stageSortOrder === "latest" ? db - da : da - db;
-    });
-  }, [stageDialog.data, stageSearchTerm, stageSortOrder]);
-
-  // ── Search helpers ────────────────────────────────────────────────────────
-  const filterJobs = (search, type) => {
-    const base = type === "active" ? [...originalActiveJobs] : [...originalClosedJobs];
-    const filtered = search
-      ? base.filter((j) =>
-        [j.title, j.id, j.location, j.status].some((f) =>
-          f.toLowerCase().includes(search.toLowerCase())
-        )
-      )
-      : base;
-    type === "active" ? setActiveJobs(filtered) : setClosedJobs(filtered);
-  };
-
-  useEffect(() => {
-    filterJobs(globalSearchQuery || activeSearchTerm, "active");
-    filterJobs(globalSearchQuery || closedSearchTerm, "closed");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [globalSearchQuery, originalActiveJobs, originalClosedJobs]);
-
-  const handleViewJob = (job) =>
-    navigate("/recruit/requisitions/Job-details", { state: { job_details_id: job.job_details_id } });
-
-  const closeJobsDialog = () => { setJobsDialog((p) => ({ ...p, open: false })); setJobsDialogSearch(""); };
-
-  // ── KPI stat-card click → open the jobs dialog (Total/Open/Closed) or the stage dialog (Onboarded) ──
-  const handleStatClick = (config) => {
-    if (config.navType === "stage") return handleStageClick(config.key);
-    setJobsDialog({ open: true, filter: config.navType }); // "all" | "active" | "closed"
-  };
-  const jobsDialogAll = sortJobsByDate([...originalActiveJobs, ...originalClosedJobs]);
-  const jobsDialogSource =
-    jobsDialog.filter === "active" ? originalActiveJobs :
-      jobsDialog.filter === "closed" ? originalClosedJobs :
-        jobsDialogAll;
-  const jobsDialogTerm = jobsDialogSearch.trim().toLowerCase();
-  const jobsDialogData = jobsDialogTerm
-    ? jobsDialogSource.filter((j) => j.title?.toLowerCase().includes(jobsDialogTerm) || j.id?.toLowerCase().includes(jobsDialogTerm))
-    : jobsDialogSource;
-  const jobsDialogTitle = jobsDialog.filter === "active" ? "Open Jobs" : jobsDialog.filter === "closed" ? "Closed Jobs" : "Total Jobs";
-  const rawMonthKeys =
-    candidateSummary?.interview_analysis_trend?.labels ||
-    candidateSummary?.candidate_funnel_trend?.labels ||
-    [];
-  const monthlyColumns = rawMonthKeys.map(formatMonthLabel);
-  const jobOverview = candidateSummary?.job_overview || {};
-  const jobOverviewSeries = (metric) =>
-    isAllTime ? [jobOverview?.[metric]?.value || 0] : rawMonthKeys.map((k) => jobOverview?.[metric]?.breakdown?.[k] || 0);
-
-  const funnelTrendRows = createPipelineTrendData(candidateSummary?.candidate_funnel_trend);
-  const offerTrendRows = createOfferTrendData(candidateSummary?.offer_analysis_trend);
-
-  const withTotals = (rows) => rows.map((row) => ({ ...row, total: row.values.reduce((sum, v) => sum + v, 0) }));
-
-  const monthlySections = [
-    {
-      title: "Job Overview",
-      rows: withTotals([
-        { label: "Total Jobs", color: COLORS.royalBlue, values: jobOverviewSeries("total_jobs") },
-        { label: "Open Jobs", color: CHART_COLORS.open, values: jobOverviewSeries("open_jobs") },
-        { label: "Closed Jobs", color: CHART_COLORS.closed, values: jobOverviewSeries("closed_jobs") },
-      ]),
-    },
-    {
-      title: "Interview Analysis",
-      rows: withTotals([
-        { label: "Scheduled", color: "#FFC107", values: interviewChartData.map((r) => r.scheduled) },
-        { label: "Rescheduled", color: COLORS.skyBlue, values: interviewChartData.map((r) => r.rescheduled) },
-        { label: "Completed", color: CHART_COLORS.interviewPassed, values: interviewChartData.map((r) => r.completed) },
-        { label: "Cancelled", color: CHART_COLORS.interviewCancelled, values: interviewChartData.map((r) => r.cancelled) },
-      ]),
-    },
-    {
-      title: "Candidate Funnel",
-      rows: withTotals([
-        { label: "Matched", color: CHART_COLORS.matched, values: funnelTrendRows.map((r) => r.matched) },
-        { label: "Shortlisted", color: CHART_COLORS.shortlisted, values: funnelTrendRows.map((r) => r.shortlisted) },
-        { label: "Interview", color: CHART_COLORS.interviewing, values: funnelTrendRows.map((r) => r.interviewing) },
-        { label: "Onboarded", color: CHART_COLORS.onboarded, values: funnelTrendRows.map((r) => r.onboarded) },
-      ]),
-    },
-    {
-      title: "Offer Status",
-      rows: withTotals([
-        { label: "Released", color: CHART_COLORS.offerReleased, values: offerTrendRows.map((r) => r.offer_released) },
-        { label: "Accepted", color: CHART_COLORS.offerAccepted, values: offerTrendRows.map((r) => r.offer_accepted) },
-        { label: "Rejected", color: CHART_COLORS.offerRejected, values: offerTrendRows.map((r) => r.offer_rejected) },
-        { label: "Revoked", color: CHART_COLORS.offerRevoked, values: offerTrendRows.map((r) => r.offer_revoked) },
-      ]),
-    },
-  ];
-
-  const snapshotSections = [
-    {
-      title: "Candidate Pipeline",
-      rows: [
-        { label: "Matched", color: CHART_COLORS.matched, value: getSafeCount(candidateSummary, "candidate_stage_breakdown.matched") },
-        { label: "Shortlisted", color: CHART_COLORS.shortlisted, value: getSafeCount(candidateSummary, "candidate_stage_breakdown.shortlisted") },
-        { label: "Interview", color: CHART_COLORS.interviewing, value: getSafeCount(candidateSummary, "candidate_stage_breakdown.interviewing.total") },
-        { label: "Selected", color: CHART_COLORS.selected, value: getSafeCount(candidateSummary, "candidate_stage_breakdown.selected") },
-        { label: "Offer Released", color: CHART_COLORS.offerReleased, value: getSafeCount(candidateSummary, "candidate_stage_breakdown.offers.offer_released.total") },
-        { label: "Offer Accepted", color: CHART_COLORS.offerAccepted, value: getSafeCount(candidateSummary, "candidate_stage_breakdown.offers.offer_released.offer_accepted") },
-        { label: "Offer Rejected", color: CHART_COLORS.offerRejected, value: getSafeCount(candidateSummary, "candidate_stage_breakdown.offers.offer_released.offer_rejected") },
-        { label: "Offer Revoked", color: CHART_COLORS.offerRevoked, value: getSafeCount(candidateSummary, "candidate_stage_breakdown.offers.offer_released.offer_revoked") },
-        { label: "Onboarded", color: CHART_COLORS.onboarded, value: getSafeCount(candidateSummary, "candidate_stage_breakdown.onboarded") },
-        { label: "Rejected", color: CHART_COLORS.rejected, value: getSafeCount(candidateSummary, "candidate_stage_breakdown.rejected") },
-      ],
-    },
-    {
-      title: "Candidates by Experience",
-      rows: [
-        { label: "0–2 yrs", color: "#174FDF", value: candidateSummary?.candidate_experience?.["0-2_years"] || 0 },
-        { label: "3–5 yrs", color: "#0571ED", value: candidateSummary?.candidate_experience?.["3-5_years"] || 0 },
-        { label: "6–10 yrs", color: "#0097A7", value: candidateSummary?.candidate_experience?.["6-10_years"] || 0 },
-        { label: "10+ yrs", color: "#00BBD4", value: candidateSummary?.candidate_experience?.["10+_years"] || 0 },
-      ],
-    },
-  ];
-  const handleExportPdf = async () => {
-    setExportingPdf(true);
-    try {
-      await exportDashboardToPdf({
-        scope: analyticsView,
-        sectionSelectors: [
-          "#dash-stat-cards",
-          // "#dash-requisitions",
-          "#dash-chart-interviews",
-          "#dash-pipeline-trend",
-          "#dash-experience-hired",
-          "#dash-chart-offers",
-          "#dash-pipeline-funnel",
-        ],
-      });
-    } catch (err) {
-      console.error("PDF export failed:", err);
-      toast.error("Failed to generate PDF. Please try again.");
-    } finally {
-      setExportingPdf(false);
-    }
-  };
-
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <DashboardContainer>
-      <Dialog
-        open={showWelcome}
-        onClose={handleDismissWelcome}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: "20px", overflow: "hidden", background: "transparent", boxShadow: "none" } }}
-        BackdropProps={{ sx: { backdropFilter: "blur(3px)", bgcolor: "rgba(10,14,26,0.6)" } }}
+    <Box
+      sx={{
+        minWidth: 0,
+        width: "100%",
+        height: 66,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "flex-end",
+        overflow: "hidden",
+      }}
+    >
+      <Typography
+        sx={{
+          width: "100%",
+          fontSize: 10.5,
+          fontWeight: 700,
+          color: COLORS.text,
+          lineHeight: 1,
+          height: 13,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          whiteSpace: "nowrap",
+        }}
       >
-        {showWelcome && (
-          <WelcomeToast
-            // userName={userInfo?.first_name || userInfo?.name || "there"}
-            userName={"User"}
-            totalJobs={getSafeCount(candidateSummary, "job_overview.total_jobs")}
-            totalCandidates={candidateSummary?.total_candidates || 0}
-            onDismiss={handleDismissWelcome}
-          />
-        )}
-      </Dialog>
+        {loading ? "..." : value}
+      </Typography>
 
-      {/* ── Export button — floating icon, doesn't push layout down ── */}
-      <MuiTooltip
-        title={exportingPdf ? "Generating PDF…" : "Download Report"}
-        placement="left"
-        arrow
+      <Box
+        sx={{
+          width: 16,
+          minWidth: 16,
+          height: loading
+            ? 4
+            : barHeight,
+          background: color,
+          borderRadius:
+            "2px 2px 0 0",
+          mt: 0.4,
+          flexShrink: 0,
+        }}
+      />
+
+      <Typography
+        sx={{
+          width: "100%",
+          fontSize: 9,
+          color: COLORS.textSecondary,
+          lineHeight: 1,
+          mt: 0.6,
+          textAlign: "center",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "clip",
+        }}
       >
-        <span style={{ position: "absolute", top: 60, right: 40, zIndex: 20 }}>
-          <IconButton
-            onClick={handleExportPdf}
-            disabled={exportingPdf}
+        {label}
+      </Typography>
+    </Box>
+  );
+};
+
+// ============================================================
+// KPI CARD
+// ============================================================
+
+const KpiCard = ({
+  title,
+  data,
+}) => {
+  return (
+    <Box
+      sx={{
+        height: 108,
+        width: "100%",
+        minWidth: 0,
+        maxWidth: "100%",
+        background: "#fff",
+        border:
+          `1px solid ${COLORS.border}`,
+        borderLeft:
+          `5px solid ${COLORS.blue}`,
+        borderRadius: "10px",
+        boxSizing: "border-box",
+        boxShadow:
+          "0 1px 3px rgba(15,23,42,0.04)",
+
+        display: "grid",
+
+        gridTemplateColumns:
+          "minmax(0, 1.05fr) minmax(0, 1fr) minmax(0, .95fr)",
+
+        columnGap: {
+          xs: 1,
+          sm: 1.5,
+          md: 2,
+        },
+
+        alignItems: "center",
+
+        px: {
+          xs: 1,
+          sm: 1.5,
+        },
+
+        overflow: "hidden",
+
+        "& > *": {
+          minWidth: 0,
+          maxWidth: "100%",
+        },
+      }}
+    >
+      <Box
+        sx={{
+          minWidth: 0,
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          overflow: "hidden",
+        }}
+      >
+        <Typography
+          sx={{
+            fontSize: 14,
+            fontWeight: 600,
+            color: COLORS.textSecondary,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            lineHeight: 1.1,
+            width: "100%",
+          }}
+        >
+          {title}
+        </Typography>
+
+        <Typography
+          sx={{
+            fontSize: 40,
+            fontWeight: 800,
+            color: COLORS.text,
+            lineHeight: 0.95,
+            mt: 0.8,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {data.loading
+            ? "..."
+            : data.total}
+        </Typography>
+      </Box>
+
+      <Box
+        sx={{
+          minWidth: 0,
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+        }}
+      >
+        <Box
+          sx={{
+            width: "100%",
+            height: 47,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+          }}
+        >
+          <Box
             sx={{
-              width: 38,
-              height: 38,
-              bgcolor: COLORS.royalBlue,
-              color: "#fff",
-              boxShadow: "0 2px 10px rgba(23,79,223,0.3)",
-              transition: "background-color 0.2s, box-shadow 0.2s, transform 0.15s",
-              "&:hover": {
-                bgcolor: "#1240C0",
-                boxShadow: "0 4px 14px rgba(23,79,223,0.4)",
-                transform: "translateY(-1px)",
-              },
-              "&.Mui-disabled": { bgcolor: COLORS.royalBlue, color: "#fff", opacity: 0.6 },
+              width: "100%",
+              maxWidth: 120,
+              minWidth: 0,
+              display: "flex",
+              justifyContent: "center",
+              overflow: "hidden",
             }}
           >
-            {exportingPdf
-              ? <CircularProgress size={16} sx={{ color: "#fff" }} />
-              : <DownloadOutlinedIcon sx={{ fontSize: 19 }} />}
-          </IconButton>
-        </span>
-      </MuiTooltip>
-
-      {/* ── Dashboard body: top filter bar, then vertical KPI rail (left) + analytics (right) ── */}
-      <Box sx={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 1.5 }}>
-
-        {/* Top-level filter bar — All Users/Current User, Sub-function, Period, Cumulative/Current, all drive the one shared analytics query */}
-        <Box sx={{
-          bgcolor: "#fff", borderRadius: "12px", border: `1px solid ${COLORS.border}`,
-          boxShadow: "0 2px 12px rgba(23,79,223,0.07)", p: 1.25,
-          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.25, flexWrap: "wrap", flexShrink: 0,
-        }}>
-          <ViewToggle
-            value={analyticsView}
-            onChange={(view) => navigate(view === "organisation" ? "/recruit/dashboard/organization" : "/recruit/dashboard")}
-          />
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, flexWrap: "wrap" }}>
-            <CountrySelect value={analyticsCountry} onChange={setAnalyticsCountry} disabled={isLoading} />
-            <SubFunctionSelect value={subFunction} onChange={setSubFunction} disabled={isLoading} />
-            <PeriodSelect value={periodCount} onChange={setPeriodCount} disabled={isLoading} />
-            <CountsToggle value={countsType} onChange={setCountsType} />
-            {/* <ViewModeToggle value={dashboardView} onChange={setDashboardView} /> */}
+            <Sparkline
+              values={data.graph}
+              color={COLORS.blue}
+            />
           </Box>
         </Box>
 
-        {/* Left: Total/Open/Closed/Onboarded — stretches to match the right column's full height */}
-        <Grid id="dash-stat-cards" container spacing={1.5} sx={{ flexShrink: 0 }}>
-          {STATS_CONFIG.map((config) => (
-            <Grid key={config.title} item size={{ xs: 12, sm: 6, md: 3 }}>
-              <PrimaryStatCard
-                config={config}
-                count={getSafeCount(candidateSummary, config.key)}
-                loading={isLoading}
-                sparkValues={getSparkValues(config, candidateSummary)}
-                onClick={() => handleStatClick(config)}
-              />
-            </Grid>
-          ))}
-        </Grid>
+        <GraphLegend />
+      </Box>
 
-        {/* Analytics charts on the left, detailed pipeline on the right. */}
-        <Box sx={{
+      <Box
+        sx={{
+          minWidth: 0,
+          width: "100%",
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(3, minmax(0, 1fr))",
+          columnGap: {
+            xs: 0.15,
+            sm: 0.4,
+          },
+          alignItems: "center",
+          overflow: "hidden",
+        }}
+      >
+        <StatusItem
+          label="Open"
+          value={data.open}
+          color={COLORS.open}
+          max={data.closed}
+          loading={data.loading}
+        />
+
+        <StatusItem
+          label="Closed"
+          value={data.closed}
+          color={COLORS.closed}
+          max={data.closed}
+          loading={data.loading}
+        />
+
+        <StatusItem
+          label="Hold"
+          value={data.hold}
+          color={COLORS.hold}
+          max={data.closed}
+          loading={data.loading}
+        />
+      </Box>
+    </Box>
+  );
+};
+
+// ============================================================
+// MINI STAT
+// ============================================================
+
+const MiniStat = ({
+  label,
+  value,
+}) => {
+  return (
+    <Box
+      sx={{
+        minWidth: 0,
+        width: "100%",
+        overflow: "hidden",
+      }}
+    >
+      <Typography
+        sx={{
+          width: "100%",
+          fontSize: 10.5,
+          color: COLORS.textMuted,
+          lineHeight: 1.15,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+      >
+        {label}
+      </Typography>
+
+      <Typography
+        sx={{
+          fontSize: 18,
+          fontWeight: 700,
+          color: COLORS.blue,
+          lineHeight: 1.1,
+          mt: 0.45,
+          whiteSpace: "nowrap",
+        }}
+      >
+        {value}
+      </Typography>
+    </Box>
+  );
+};
+
+// ============================================================
+// CANDIDATE CARD
+// ============================================================
+
+const CandidateCard = () => {
+  return (
+    <Box
+      sx={{
+        height: 108,
+        width: "100%",
+        minWidth: 0,
+        maxWidth: "100%",
+        background: "#fff",
+        border:
+          `1px solid ${COLORS.border}`,
+        borderLeft:
+          `5px solid ${COLORS.blue}`,
+        borderRadius: "10px",
+        boxSizing: "border-box",
+        boxShadow:
+          "0 1px 3px rgba(15,23,42,0.04)",
+
+        display: "grid",
+
+        gridTemplateColumns:
+          "minmax(0, .9fr) minmax(0, 1.1fr)",
+
+        columnGap: 2,
+
+        alignItems: "center",
+
+        px: {
+          xs: 1,
+          sm: 1.5,
+        },
+
+        overflow: "hidden",
+
+        "& > *": {
+          minWidth: 0,
+          maxWidth: "100%",
+        },
+      }}
+    >
+      <Box
+        sx={{
+          minWidth: 0,
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          overflow: "hidden",
+        }}
+      >
+        <Typography
+          sx={{
+            fontSize: 14,
+            fontWeight: 600,
+            color: COLORS.textSecondary,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            lineHeight: 1.1,
+          }}
+        >
+          Candidates Counts
+        </Typography>
+
+        <Typography
+          sx={{
+            fontSize: 40,
+            fontWeight: 800,
+            color: COLORS.text,
+            lineHeight: 0.95,
+            mt: 0.8,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {DATA.candidates.total}
+        </Typography>
+      </Box>
+
+      <Box
+        sx={{
+          minWidth: 0,
+          width: "100%",
+          display: "grid",
+          gridTemplateColumns:
+            "minmax(0, 1fr) minmax(0, 1fr)",
+          gridTemplateRows:
+            "1fr 1fr",
+          rowGap: 1,
+          columnGap: 1.2,
+          alignItems: "center",
+          overflow: "hidden",
+        }}
+      >
+        <MiniStat
+          label="Applications"
+          value={
+            DATA.candidates
+              .applications
+          }
+        />
+
+        <MiniStat
+          label="Shortlisted"
+          value={
+            DATA.candidates
+              .shortlisted
+          }
+        />
+
+        <MiniStat
+          label="Interview"
+          value={
+            DATA.candidates.interview
+          }
+        />
+
+        <MiniStat
+          label="Onboarded"
+          value={
+            DATA.candidates
+              .onboarded
+          }
+        />
+      </Box>
+    </Box>
+  );
+};
+
+// ============================================================
+// CARD HEADER
+// ============================================================
+
+const CardHeader = ({
+  title,
+  toggle,
+  onToggle,
+}) => {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 1,
+        mb: 2,
+        minWidth: 0,
+      }}
+    >
+      <Typography
+        sx={{
+          fontSize: 15.5,
+          fontWeight: 700,
+          color: COLORS.text,
+          minWidth: 0,
+        }}
+      >
+        {title}
+      </Typography>
+
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 0.7,
+          flexShrink: 0,
+        }}
+      >
+        {toggle && (
+          <Toggle
+            small
+            value={toggle.value}
+            options={toggle.options}
+            onChange={onToggle}
+          />
+        )}
+
+        <IconButton
+          size="small"
+          sx={{
+            width: 26,
+            height: 26,
+            flexShrink: 0,
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 15,
+              color: COLORS.textMuted,
+            }}
+          >
+            ⤢
+          </Typography>
+        </IconButton>
+      </Box>
+    </Box>
+  );
+};
+
+// ============================================================
+// CHART CARD
+// ============================================================
+
+const ChartCard = ({
+  children,
+  sx = {},
+}) => {
+  return (
+    <Box
+      sx={{
+        background: "#fff",
+        border:
+          `1px solid ${COLORS.border}`,
+        borderRadius: "14px",
+        boxShadow:
+          "0 1px 3px rgba(15,23,42,0.04)",
+        padding: 2.4,
+        minWidth: 0,
+        overflow: "hidden",
+        ...sx,
+      }}
+    >
+      {children}
+    </Box>
+  );
+};
+
+// ============================================================
+// NICE TICKS
+// ============================================================
+
+const niceTicks = (max) => {
+  const step = max / 4;
+
+  return [
+    0,
+    step,
+    step * 2,
+    step * 3,
+    max,
+  ].map((value) =>
+    Math.round(value)
+  );
+};
+
+// ============================================================
+// AXIS
+// ============================================================
+
+const AxisRow = ({
+  max,
+  labelWidth = 110,
+  valueWidth = 30,
+}) => {
+  const ticks = niceTicks(max);
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        ml: `${labelWidth + 12}px`,
+        mr: `${valueWidth + 12}px`,
+        mt: 1.2,
+      }}
+    >
+      {ticks.map(
+        (tick, index) => (
+          <Typography
+            key={index}
+            sx={{
+              fontSize: 10,
+              color: COLORS.textMuted,
+            }}
+          >
+            {tick}
+          </Typography>
+        )
+      )}
+    </Box>
+  );
+};
+
+// ============================================================
+// SUB FUNCTION BARS
+// Dedicated to the "Candidates by Sub-function" card: no track
+// background, the value sits right after the bar's own end
+// (not in a fixed far-right column), faint vertical gridlines
+// run the full chart height, and zero-value entries (e.g.
+// "Generic") are hidden.
+// ============================================================
+
+const SubFunctionBars = ({
+  data,
+}) => {
+  const filtered = data.filter(
+    (item) => item.value > 0
+  );
+
+  const maxValue = Math.max(
+    ...filtered.map(
+      (item) => item.value
+    ),
+    1
+  );
+
+  const ticks = niceTicks(
+    maxValue
+  );
+
+  const labelWidth = 92;
+
+  return (
+    <Box>
+      <Box
+        sx={{
           position: "relative",
-          flex: 1, minWidth: 0, minHeight: 0, display: "flex", flexDirection: { xs: "column", lg: "row" }, gap: 1.5,
-        }}>
-          {dashboardView === "table" ? (
-            <DashboardTableView
-              monthlyColumns={monthlyColumns}
-              monthlySections={monthlySections}
-              snapshotSections={snapshotSections}
-            />
-          ) : (
-            <>
-              <Box sx={{ flex: 1, minWidth: 0, minHeight: 0, display: "grid", gap: 1.5, gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" }, gridTemplateRows: { lg: "repeat(2, minmax(0, 1fr))" } }}>
-                <Box id="dash-chart-interviews" sx={{ minWidth: 0, minHeight: 0 }}>
-                  {isAllTime ? (
-                    <HorizontalBarChart
-                      title="Interviews by Status"
-                      data={buildBarSeriesData(candidateSummary?.interview_analysis_trend, INTERVIEW_BAR_FIELDS)}
-                    />
-                  ) : (
-                    <TrendLineChart
-                      title="Interviews by Status"
-                      data={interviewChartData}
-                      series={[
-                        { key: "scheduled", label: "Scheduled", color: "#FFC107" },
-                        { key: "rescheduled", label: "Rescheduled", color: COLORS.skyBlue },
-                        { key: "completed", label: "Completed", color: CHART_COLORS.interviewPassed },
-                        { key: "cancelled", label: "Cancelled", color: CHART_COLORS.interviewCancelled },
-                      ]}
-                    />
-                  )}
-                </Box>
-                <Box id="dash-pipeline-trend" sx={{ minWidth: 0, minHeight: 0 }}>
-                  {isAllTime ? (
-                    <HorizontalBarChart
-                      title="Candidates by Status"
-                      data={buildBarSeriesData(candidateSummary?.candidate_funnel_trend, FUNNEL_BAR_FIELDS)}
-                    />
-                  ) : (
-                    <TrendLineChart
-                      title="Candidates by Status"
-                      data={createPipelineTrendData(candidateSummary?.candidate_funnel_trend)}
-                      series={[
-                        { key: "matched", label: "Matched", color: CHART_COLORS.matched },
-                        { key: "shortlisted", label: "Shortlisted", color: CHART_COLORS.shortlisted },
-                        { key: "interviewing", label: "Interview", color: CHART_COLORS.interviewing },
-                        { key: "onboarded", label: "Onboarded", color: CHART_COLORS.onboarded },
-                      ]}
-                    />
-                  )}
-                </Box>
-                <Box id="dash-experience-hired" sx={{ minWidth: 0, minHeight: 0 }}>
-                  <DonutChart title="Candidate by Experience" data={buildExperienceDonutData(candidateSummary?.candidate_experience)} chartTypes={["donut", "bar"]} />
-                </Box>
-                <Box id="dash-chart-offers" sx={{ minWidth: 0, minHeight: 0 }}>
-                  {isAllTime ? (
-                    <HorizontalBarChart
-                      title="Offer Status"
-                      data={buildBarSeriesData(candidateSummary?.offer_analysis_trend, OFFER_BAR_FIELDS)}
-                    />
-                  ) : (
-                    <DonutChart title="Offer Status" data={buildOfferBreakdownData(candidateSummary)} />
-                  )}
-                </Box>
-              </Box>
-
-              <Box id="dash-pipeline-funnel" sx={{ flex: 1, minWidth: 0, minHeight: { xs: 360, lg: 0 } }}>
-                <CandidatePipelineFunnel
-                  data={candidateSummary?.candidate_stage_breakdown}
-                  totalCount={candidateSummary?.total_candidates || 0}
-                  loading={isLoading || isFetching}
-                  onStageClick={(stageKey) => handleStageClick(`candidate_stage_breakdown.${stageKey}`)}
-                  countsType={countsType}
-                />
-              </Box>
-            </>
+        }}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            left: `${
+              labelWidth + 12
+            }px`,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            pointerEvents: "none",
+          }}
+        >
+          {ticks.map(
+            (tick, index) => (
+              <Box
+                key={index}
+                sx={{
+                  position:
+                    "absolute",
+                  left: `${
+                    (tick /
+                      maxValue) *
+                    100
+                  }%`,
+                  top: 0,
+                  bottom: 0,
+                  width: "1px",
+                  background:
+                    COLORS.border,
+                }}
+              />
+            )
           )}
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2.4,
+            position: "relative",
+          }}
+        >
+          {filtered.map((item) => {
+            const pct =
+              (item.value /
+                maxValue) *
+              100;
+
+            return (
+              <Box
+                key={item.label}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.2,
+                  minWidth: 0,
+                }}
+              >
+                <Typography
+                  sx={{
+                    width: labelWidth,
+                    flexShrink: 0,
+                    textAlign: "right",
+                    fontSize: 12,
+                    color:
+                      COLORS.textSecondary,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow:
+                      "ellipsis",
+                  }}
+                >
+                  {item.label}
+                </Typography>
+
+                <Box
+                  sx={{
+                    position: "relative",
+                    flex: 1,
+                    minWidth: 0,
+                    height: 10,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      height: "100%",
+                      width: `${pct}%`,
+                      minWidth: 6,
+                      borderRadius: "5px",
+                      background:
+                        item.color,
+                    }}
+                  />
+
+                  <Typography
+                    sx={{
+                      position: "absolute",
+                      left: `calc(${pct}% + 10px)`,
+                      top: "50%",
+                      transform:
+                        "translateY(-50%)",
+                      fontSize: 13,
+                      fontWeight: 800,
+                      color: COLORS.text,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {item.value}
+                  </Typography>
+                </Box>
+              </Box>
+            );
+          })}
         </Box>
       </Box>
 
-      {/* ── No data overlay ── */}
-      {/* {isNoData && (
-          <Box sx={{ position: "absolute", top: "35%", left: "50%", transform: "translate(-50%,-50%)", textAlign: "center", zIndex: 10 }}>
-            <Box sx={{ bgcolor: "#fff", borderRadius: "16px", p: 4, boxShadow: "0 8px 32px rgba(23,79,223,0.15)", border: `1px solid ${COLORS.border}` }}>
-              <Typography sx={{ fontSize: 15, color: COLORS.textSecondary, mb: 1 }}>
-                No data yet —{" "}
-                <span
-                  onClick={() => navigate("/recruit/create-job/job-requirements")}
-                  style={{ color: COLORS.royalBlue, cursor: "pointer", textDecoration: "underline", fontWeight: 600 }}
-                >
-                  create a job
-                </span>{" "}
-                to unlock analytics 🚀
-              </Typography>
-            </Box>
-          </Box>
-        )} */}
+      <AxisRow
+        max={maxValue}
+        labelWidth={labelWidth}
+        valueWidth={0}
+      />
+    </Box>
+  );
+};
 
-      {/* ============================ Stage Details Dialog ============================== */}
-      <Dialog
-        open={stageDialog.open}
-        onClose={closeStageDialog}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: "14px", overflow: "hidden" } }}
+// ============================================================
+// HORIZONTAL BARS
+// ============================================================
+
+const HorizontalBars = ({
+  data,
+  maxValue,
+}) => {
+  const max =
+    maxValue ||
+    Math.max(
+      ...data.map(
+        (item) => item.value
+      ),
+      1
+    );
+
+  const labelWidth = 110;
+  const valueWidth = 30;
+
+  return (
+    <Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 2.2,
+        }}
       >
-        {/* Header */}
-        <Box sx={{
-          px: 3, py: 2,
-          borderBottom: `1px solid ${COLORS.border}`,
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-        }}>
-          <Box>
-            <Typography sx={{ fontSize: 16, fontWeight: 700, color: COLORS.royalBlue, textTransform: "capitalize" }}>
-              {stageDialog.stage} Candidates
-            </Typography>
-            {/* <Typography sx={{ fontSize: 12, color: COLORS.textSecondary, mt: 0.3 }}>
-              {new Date().toLocaleString("default", { month: "long", year: "numeric" })}
-              {stageDialog.count > 0 && ` · ${stageDialog.count} total`}
-            </Typography> */}
-            <Typography sx={{ fontSize: 12, color: COLORS.textSecondary, mt: 0.3 }}>
-              All time
-              {stageDialog.count > 0 && ` · ${stageDialog.count} total`}
-            </Typography>
-          </Box>
-          <IconButton
-            size="small"
-            onClick={closeStageDialog}
+        {data.map((item) => (
+          <Box
+            key={item.label}
             sx={{
-              border: `1px solid ${COLORS.border}`, borderRadius: "8px",
-              width: 30, height: 30,
-              "&:hover": { bgcolor: "#FEECEC", borderColor: "#FCC", color: "#D93026" },
+              display: "flex",
+              alignItems: "center",
+              gap: 1.2,
+              minWidth: 0,
             }}
           >
-            <CloseIcon sx={{ fontSize: 15 }} />
-          </IconButton>
-        </Box>
+            <Typography
+              sx={{
+                width: labelWidth,
+                flexShrink: 0,
+                textAlign: "right",
+                fontSize: 12,
+                color: COLORS.textSecondary,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {item.label}
+            </Typography>
 
-
-        {/*====================== Search Bar ================================ */}
-        {!stageDialog.loading && stageDialog.data.length > 0 && (
-          <>
-            {/* Search + sort row (existing) */}
-            <Box sx={{ px: 3, py: 1.5, borderBottom: `1px solid ${COLORS.border}`, display: "flex", gap: 1 }}>
-              <TextField
-                fullWidth
-                variant="outlined"
-                placeholder="Search by CLIN ID or name..."
-                value={stageSearchInput}
-                onChange={(e) => setStageSearchInput(e.target.value)}
-                size="small"
-                InputProps={{
-                  endAdornment: (
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <SearchIcon sx={{ fontSize: "16px", color: COLORS.textMuted, mr: stageSearchInput ? 0.5 : 0 }} />
-                      {stageSearchInput && (
-                        <IconButton size="small" onClick={() => { setStageSearchInput(""); setStageSearchTerm(""); }}>
-                          <CloseIcon sx={{ fontSize: "14px" }} />
-                        </IconButton>
-                      )}
-                    </Box>
-                  ),
-                  sx: {
-                    borderRadius: "8px", fontSize: "13px",
-                    backgroundColor: COLORS.bgPage,
-                    "& .MuiOutlinedInput-notchedOutline": { borderColor: COLORS.border },
-                  },
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                height: 18,
+                background: "#F1F5F9",
+                borderRadius: "5px",
+                overflow: "hidden",
+              }}
+            >
+              <Box
+                sx={{
+                  width: `${
+                    (item.value / max) *
+                    100
+                  }%`,
+                  height: "100%",
+                  background: item.color,
+                  borderRadius: "5px",
+                  minWidth:
+                    item.value > 0
+                      ? 4
+                      : 0,
                 }}
               />
-              <FormControl size="small" sx={{ minWidth: 130, flexShrink: 0 }}>
-                <Select value={stageSortOrder} onChange={(e) => setStageSortOrder(e.target.value)}
-                  sx={{ height: 40, fontSize: 12, borderRadius: "8px", bgcolor: COLORS.bgPage }}>
-                  <MenuItem value="latest" sx={{ fontSize: 12 }}>Latest first</MenuItem>
-                  <MenuItem value="oldest" sx={{ fontSize: 12 }}>Oldest first</MenuItem>
-                </Select>
-              </FormControl>
             </Box>
 
-            {/* NEW: filter chips row */}
-            <Box sx={{ px: 3, py: 1.2, borderBottom: `1px solid ${COLORS.border}`, display: "flex", gap: 1, flexWrap: "wrap" }}>
-            </Box>
-          </>
-        )}
+            <Typography
+              sx={{
+                width: valueWidth,
+                flexShrink: 0,
+                fontSize: 12.5,
+                fontWeight: 700,
+                color: COLORS.text,
+              }}
+            >
+              {item.value}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
 
-        {/* Body */}
-        <DialogContent sx={{ p: 0 }}>
-          {stageDialog.loading ? (
-            <Box sx={{ p: 3 }}>
-              {[1, 2, 3, 4].map((i) => (
-                <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 1.5, borderBottom: `0.5px solid ${COLORS.border}` }}>
-                  <Skeleton variant="circular" width={36} height={36} />
-                  <Box sx={{ flex: 1 }}>
-                    <Skeleton width="60%" height={16} />
-                    <Skeleton width="40%" height={12} sx={{ mt: 0.5 }} />
-                  </Box>
-                  <Skeleton width={70} height={12} />
-                </Box>
-              ))}
-            </Box>
-          ) : stageDialog.data.length === 0 ? (
-            <Box sx={{ py: 8, textAlign: "center" }}>
-              <Typography sx={{ fontSize: 13, color: COLORS.textMuted }}>
-                No candidates found for this stage.
+      <AxisRow
+        max={max}
+        labelWidth={labelWidth}
+        valueWidth={valueWidth}
+      />
+    </Box>
+  );
+};
+
+// ============================================================
+// INTERVIEW LINE CHART
+// IMPORTANT:
+// `item.line` now comes directly from the API.
+//
+// Row style matches the target UI: a pill-shaped label on the
+// left, the latest value centered, and a sparkline on the
+// right with a soft color-filled area under the trend line.
+// Rows are separated by a thin divider instead of a full box
+// border. Only 5 statuses are shown here (no "Not Conducted"),
+// matching the reference screenshots.
+// ============================================================
+
+const InterviewLineChart = ({
+  data,
+  loading = false,
+}) => {
+  const width = 120;
+  const height = 34;
+
+  // Normalize against a shared max across every status so
+  // row heights/lengths are comparable to one another (rather
+  // than each row always maxing out against itself).
+  const allValues = data.flatMap((item) =>
+    Array.isArray(item.line) && item.line.length > 0
+      ? item.line
+      : [0]
+  );
+
+  const maxValue = Math.max(...allValues, 1);
+
+  const createPoints = (
+    values
+  ) => {
+    const safeValues =
+      Array.isArray(values) &&
+      values.length >= 2
+        ? values
+        : [0, 0];
+
+    return safeValues.map(
+      (value, index) => {
+        const x =
+          (index /
+            (safeValues.length - 1)) *
+          width;
+
+        const y =
+          height -
+          (Number(value) /
+            maxValue) *
+            (height - 6) -
+          3;
+
+        return {
+          x,
+          y,
+        };
+      }
+    );
+  };
+
+  return (
+    <Box
+      sx={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {data.map((item, rowIndex) => {
+        // Only draw an actual trend line/area when the API has
+        // given us 2+ periods to plot. With a single aggregate
+        // value (the current API shape), a "line" has nothing
+        // real to show — every row would render identically
+        // regardless of value. A proportional bar communicates
+        // relative magnitude instead, until real period-level
+        // data is available.
+        const hasTrend =
+          Array.isArray(item.line) &&
+          item.line.length > 1;
+
+        const points = hasTrend
+          ? createPoints(item.line)
+          : [];
+
+        const linePath = hasTrend
+          ? points.reduce(
+              (
+                result,
+                point,
+                index
+              ) => {
+                if (index === 0) {
+                  return `M ${point.x} ${point.y}`;
+                }
+
+                const previous =
+                  points[index - 1];
+
+                const middleX =
+                  (previous.x +
+                    point.x) /
+                  2;
+
+                return `${result} C ${middleX} ${previous.y}, ${middleX} ${point.y}, ${point.x} ${point.y}`;
+              },
+              ""
+            )
+          : "";
+
+        const areaPath =
+          hasTrend && points.length > 0
+            ? `${linePath} L ${
+                points[points.length - 1].x
+              } ${height} L ${points[0].x} ${height} Z`
+            : "";
+
+        const barPct =
+          maxValue > 0
+            ? Math.max(
+                0,
+                Math.min(
+                  100,
+                  (Number(item.value) /
+                    maxValue) *
+                    100
+                )
+              )
+            : 0;
+
+        return (
+          <Box
+            key={item.label}
+            sx={{
+              display: "grid",
+              gridTemplateColumns:
+                "108px 28px minmax(80px, 1fr)",
+              alignItems: "center",
+              gap: 0.9,
+              py: 0.7,
+              borderBottom:
+                rowIndex <
+                data.length - 1
+                  ? `1px solid ${COLORS.border}`
+                  : "none",
+            }}
+          >
+            <Box
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent:
+                  "center",
+                border:
+                  `1px solid ${COLORS.border}`,
+                borderRadius: "999px",
+                px: 1.4,
+                py: 0.4,
+                width: "fit-content",
+                background: "#fff",
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: 12,
+                  color:
+                    COLORS.textSecondary,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {item.label}
               </Typography>
             </Box>
-          ) : filteredStageData.length === 0 ? (
-            <Box sx={{ py: 8, textAlign: "center" }}>
-              <Typography sx={{ fontSize: 13, color: COLORS.textMuted }}>
-                No candidates match "<strong>{stageSearchInput}</strong>".
-              </Typography>
-            </Box>
-          ) : (
-            <Box sx={{ px: 3 }}>
-              {filteredStageData.map((c, i) => (
-                <StageCandidateRow
-                  key={c.candidate_id || c.clin_id || i}
-                  candidate={c}
-                  index={i}
-                  navigate={navigate}
-                />
-              ))}
-              {!stageDialog.loading && filteredStageData.length > 0 && stageDialog.count > stageDialog.pageSize && !stageSearchTerm.trim() && (
-                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 1, px: 3, py: 2, borderTop: `1px solid ${COLORS.border}` }}>
-                  <IconButton
-                    size="small"
-                    disabled={stageDialog.page <= 1}
-                    onClick={() => handleStagePageChange(stageDialog.page - 1)}
-                    sx={{ border: `1px solid ${COLORS.border}`, borderRadius: "8px" }}
-                  >
-                    <ChevronLeftIcon sx={{ fontSize: 18 }} />
-                  </IconButton>
 
-                  <Typography sx={{ fontSize: 12, color: COLORS.textSecondary, minWidth: 80, textAlign: "center" }}>
-                    Page {stageDialog.page} of {Math.ceil(stageDialog.count / stageDialog.pageSize)}
-                  </Typography>
+            <Typography
+              sx={{
+                fontSize: 14.5,
+                fontWeight: 800,
+                color: COLORS.text,
+                textAlign: "center",
+              }}
+            >
+              {loading
+                ? "..."
+                : item.value}
+            </Typography>
 
-                  <IconButton
-                    size="small"
-                    disabled={stageDialog.page >= Math.ceil(stageDialog.count / stageDialog.pageSize)}
-                    onClick={() => handleStagePageChange(stageDialog.page + 1)}
-                    sx={{ border: `1px solid ${COLORS.border}`, borderRadius: "8px" }}
-                  >
-                    <ChevronRightIcon sx={{ fontSize: 18 }} />
-                  </IconButton>
+            <Box
+              sx={{
+                height,
+                minWidth: 0,
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              {hasTrend ? (
+                <svg
+                  viewBox={`0 0 ${width} ${height}`}
+                  width="100%"
+                  height={height}
+                  preserveAspectRatio="none"
+                  style={{
+                    display: "block",
+                    overflow: "visible",
+                  }}
+                >
+                  {areaPath && (
+                    <path
+                      d={areaPath}
+                      fill={item.color}
+                      opacity={0.14}
+                      stroke="none"
+                    />
+                  )}
+
+                  <path
+                    d={linePath}
+                    fill="none"
+                    stroke={item.color}
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+
+                  {points.map(
+                    (point, index) => (
+                      <circle
+                        key={index}
+                        cx={point.x}
+                        cy={point.y}
+                        r="3.5"
+                        fill={item.color}
+                      />
+                    )
+                  )}
+                </svg>
+              ) : (
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: 8,
+                    borderRadius: "5px",
+                    background: "#F1F5F9",
+                    overflow: "hidden",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: `${barPct}%`,
+                      height: "100%",
+                      background: item.color,
+                      borderRadius: "5px",
+                      minWidth:
+                        item.value > 0
+                          ? 4
+                          : 0,
+                      transition:
+                        "width .25s ease",
+                    }}
+                  />
                 </Box>
               )}
             </Box>
-
-          )}
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, py: 1.5, borderTop: `1px solid ${COLORS.border}` }}>
-          <Button onClick={closeStageDialog} sx={{ color: COLORS.royalBlue, fontSize: 13, textTransform: "none" }}>
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* ============================ Jobs Dialog (Total/Open/Closed) ============================== */}
-      <Dialog
-        open={jobsDialog.open}
-        onClose={closeJobsDialog}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: "14px", overflow: "hidden" } }}
-      >
-        {/* Header */}
-        <Box sx={{
-          px: 3, py: 2,
-          borderBottom: `1px solid ${COLORS.border}`,
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-        }}>
-          <Box>
-            <Typography sx={{ fontSize: 16, fontWeight: 700, color: COLORS.royalBlue }}>
-              {jobsDialogTitle}
-            </Typography>
-            <Typography sx={{ fontSize: 12, color: COLORS.textSecondary, mt: 0.3 }}>
-              {jobsDialogData.length} total
-            </Typography>
           </Box>
-          <IconButton
-            size="small"
-            onClick={closeJobsDialog}
+        );
+      })}
+    </Box>
+  );
+};
+
+// ============================================================
+// INTERVIEW BAR CHART
+// IMPORTANT:
+// This is a per-period (month) chart, not a per-status chart.
+// For each period, the dominant status (highest value that
+// period) sets the bar's height and color. A colored-text
+// legend for all statuses is rendered below, matching the
+// reference screenshot.
+// ============================================================
+
+const InterviewBarChart = ({
+  data,
+  labels = [],
+  loading = false,
+}) => {
+  const periodCount = Math.max(
+    ...data.map((item) =>
+      Array.isArray(item.line)
+        ? item.line.length
+        : 0
+    ),
+    1
+  );
+
+  const periods = Array.from(
+    { length: periodCount },
+    (_, index) => {
+      let bestItem = data[0];
+      let bestValue = -Infinity;
+
+      data.forEach((item) => {
+        const value =
+          Array.isArray(item.line) &&
+          item.line[index] !==
+            undefined
+            ? Number(
+                item.line[index]
+              ) || 0
+            : 0;
+
+        if (value > bestValue) {
+          bestValue = value;
+          bestItem = item;
+        }
+      });
+
+      return {
+        label:
+          labels[index] ||
+          `P${index + 1}`,
+        value: Math.max(
+          bestValue,
+          0
+        ),
+        color:
+          bestItem?.color ||
+          COLORS.blue,
+      };
+    }
+  );
+
+  const maxValue = Math.max(
+    ...periods.map(
+      (period) => period.value
+    ),
+    1
+  );
+
+  const chartHeight = 130;
+
+  return (
+    <Box sx={{ width: "100%" }}>
+      <Box
+        sx={{
+          height: chartHeight,
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "center",
+          gap: 3,
+          borderBottom:
+            `1px solid ${COLORS.border}`,
+          pb: 0.5,
+        }}
+      >
+        {periods.map(
+          (period, index) => (
+            <Box
+              key={index}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                width: 40,
+              }}
+            >
+              <Box
+                sx={{
+                  width: 26,
+                  height: loading
+                    ? 4
+                    : Math.max(
+                        4,
+                        (period.value /
+                          maxValue) *
+                          (chartHeight -
+                            10)
+                      ),
+                  background:
+                    period.color,
+                  borderRadius:
+                    "6px 6px 0 0",
+                  transition:
+                    "height .25s ease",
+                }}
+              />
+            </Box>
+          )
+        )}
+      </Box>
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          gap: 3,
+          mt: 0.8,
+        }}
+      >
+        {periods.map(
+          (period, index) => (
+            <Typography
+              key={index}
+              sx={{
+                width: 40,
+                textAlign: "center",
+                fontSize: 11.5,
+                color:
+                  COLORS.textSecondary,
+              }}
+            >
+              {period.label}
+            </Typography>
+          )
+        )}
+      </Box>
+
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          columnGap: 2,
+          rowGap: 0.6,
+          mt: 1.6,
+        }}
+      >
+        {data.map((item) => (
+          <Typography
+            key={item.label}
             sx={{
-              border: `1px solid ${COLORS.border}`, borderRadius: "8px",
-              width: 30, height: 30,
-              "&:hover": { bgcolor: "#FEECEC", borderColor: "#FCC", color: "#D93026" },
+              fontSize: 11.5,
+              fontWeight: 600,
+              color: item.color,
+              whiteSpace: "nowrap",
             }}
           >
-            <CloseIcon sx={{ fontSize: 15 }} />
-          </IconButton>
-        </Box>
+            {item.label}
+          </Typography>
+        ))}
+      </Box>
+    </Box>
+  );
+};
 
-        {/* Filter chips + search */}
-        <Box sx={{ px: 3, py: 1.5, borderBottom: `1px solid ${COLORS.border}`, display: "flex", gap: 1, flexWrap: "wrap" }}>
-          <Box sx={{ display: "flex", alignItems: "center", bgcolor: COLORS.bgPage, borderRadius: "20px", p: "2px", border: `1px solid ${COLORS.border}`, flexShrink: 0 }}>
-            {[
-              { value: "all", label: "All" },
-              { value: "active", label: "Open" },
-              { value: "closed", label: "Closed" },
-            ].map((opt) => (
-              <Box
-                key={opt.value}
-                onClick={() => setJobsDialog((p) => ({ ...p, filter: opt.value }))}
+// ============================================================
+// INTERVIEW STATUS CHART
+// ============================================================
+
+const InterviewStatusChart = ({
+  data,
+  chartType,
+  labels = [],
+  loading = false,
+}) => {
+  if (chartType === "bar") {
+    return (
+      <InterviewBarChart
+        data={data}
+        labels={labels}
+        loading={loading}
+      />
+    );
+  }
+
+  return (
+    <InterviewLineChart
+      data={data}
+      loading={loading}
+    />
+  );
+};
+
+// ============================================================
+// DONUT
+// ============================================================
+
+const Donut = ({
+  data,
+  total,
+}) => {
+  let current = 0;
+
+  const segments =
+    data.map((item) => {
+      const start = current;
+
+      current += item.pct;
+
+      return `${item.color} ${
+        start * 3.6
+      }deg ${
+        current * 3.6
+      }deg`;
+    });
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 3,
+        minWidth: 0,
+      }}
+    >
+      <Box
+        sx={{
+          width: 105,
+          height: 105,
+          borderRadius: "50%",
+          flexShrink: 0,
+          background:
+            `conic-gradient(${segments.join(
+              ","
+            )})`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Box
+          sx={{
+            width: 70,
+            height: 70,
+            borderRadius: "50%",
+            background: "#fff",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 19,
+              fontWeight: 800,
+              lineHeight: 1,
+            }}
+          >
+            {total}
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: 9,
+              color: COLORS.textMuted,
+              mt: 0.3,
+            }}
+          >
+            total
+          </Typography>
+        </Box>
+      </Box>
+
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 0.9,
+          minWidth: 0,
+        }}
+      >
+        {data.map((item) => (
+          <Box
+            key={item.label}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              minWidth: 0,
+            }}
+          >
+            <Box
+              sx={{
+                width: 8,
+                height: 8,
+                minWidth: 8,
+                borderRadius: "50%",
+                background:
+                  item.color,
+              }}
+            />
+
+            <Typography
+              sx={{
+                fontSize: 11,
+                color:
+                  COLORS.textSecondary,
+                width: 70,
+                flexShrink: 0,
+              }}
+            >
+              {item.label}
+            </Typography>
+
+            <Typography
+              sx={{
+                fontSize: 11.5,
+                fontWeight: 700,
+              }}
+            >
+              {item.value}
+            </Typography>
+
+            <Typography
+              sx={{
+                fontSize: 10,
+                color:
+                  COLORS.textMuted,
+              }}
+            >
+              ({item.pct}%)
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+};
+
+// ============================================================
+// CURRENT PIPELINE
+// ============================================================
+
+const CurrentPipelineChart = ({
+  data,
+  loading = false,
+}) => {
+  const max = Math.max(
+    ...data.map(
+      (item) =>
+        Number(item.value) || 0
+    ),
+    1
+  );
+
+  const ticks = niceTicks(max);
+  const chartHeight = 300;
+
+  return (
+    <Box sx={{ minWidth: 0 }}>
+      <Typography
+        sx={{
+          fontSize: 10.5,
+          fontWeight: 700,
+          color: COLORS.textMuted,
+          letterSpacing: 0.5,
+          mb: 2,
+        }}
+      >
+        MAIN FLOW
+      </Typography>
+
+      <Box
+        sx={{
+          display: "flex",
+          height: chartHeight,
+          minWidth: 0,
+        }}
+      >
+        <Box
+          sx={{
+            width: 34,
+            flexShrink: 0,
+            height: chartHeight,
+            display: "flex",
+            flexDirection:
+              "column-reverse",
+            justifyContent:
+              "space-between",
+            pr: 1,
+          }}
+        >
+          {ticks.map(
+            (tick, index) => (
+              <Typography
+                key={index}
                 sx={{
-                  px: 1.5, py: 0.5, borderRadius: "18px", cursor: "pointer",
-                  fontSize: 11.5, fontWeight: 600,
-                  color: jobsDialog.filter === opt.value ? "#fff" : COLORS.textSecondary,
-                  bgcolor: jobsDialog.filter === opt.value ? COLORS.royalBlue : "transparent",
-                  transition: "background-color 0.15s, color 0.15s",
+                  fontSize: 9,
+                  color: COLORS.textMuted,
+                  textAlign: "right",
+                  lineHeight: 1,
                 }}
               >
-                {opt.label}
+                {tick}
+              </Typography>
+            )
+          )}
+        </Box>
+
+        <Box
+          sx={{
+            position: "relative",
+            flex: 1,
+            minWidth: 0,
+            height: chartHeight,
+            overflow: "hidden",
+          }}
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              flexDirection:
+                "column-reverse",
+              justifyContent:
+                "space-between",
+            }}
+          >
+            {ticks.map(
+              (tick, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    borderTop:
+                      `1px solid ${COLORS.border}`,
+                    width: "100%",
+                    height: 0,
+                  }}
+                />
+              )
+            )}
+          </Box>
+
+          <Box
+            sx={{
+              position: "relative",
+              height: "100%",
+              display: "flex",
+              alignItems: "flex-end",
+              gap: 1.2,
+              px: 0.5,
+              minWidth: 0,
+            }}
+          >
+            {data.map((item) => (
+              <Box
+                key={item.label}
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                <Box
+                  sx={{
+                    flex: 1,
+                    width: "100%",
+                    minWidth: 0,
+                    display: "flex",
+                    alignItems: "flex-end",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      position:
+                        "relative",
+                      width: "100%",
+                      height: `${
+                        ((Number(
+                          item.value
+                        ) || 0) /
+                          max) *
+                        100
+                      }%`,
+                      minHeight:
+                        item.value > 0
+                          ? 4
+                          : 0,
+                      background:
+                        item.color,
+                      borderRadius:
+                        "4px 4px 0 0",
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        position:
+                          "absolute",
+                        top: -19,
+                        left: "50%",
+                        transform:
+                          "translateX(-50%)",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        whiteSpace:
+                          "nowrap",
+                      }}
+                    >
+                      {loading
+                        ? "..."
+                        : item.value}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Typography
+                  sx={{
+                    fontSize: 9,
+                    color:
+                      COLORS.textMuted,
+                    mt: 1,
+                    textAlign: "center",
+                    lineHeight: 1.2,
+                    whiteSpace:
+                      "nowrap",
+                  }}
+                >
+                  {item.label}
+                </Typography>
               </Box>
             ))}
           </Box>
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="Search by job title or ID..."
-            value={jobsDialogSearch}
-            onChange={(e) => setJobsDialogSearch(e.target.value)}
-            size="small"
-            InputProps={{
-              endAdornment: (
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <SearchIcon sx={{ fontSize: "16px", color: COLORS.textMuted, mr: jobsDialogSearch ? 0.5 : 0 }} />
-                  {jobsDialogSearch && (
-                    <IconButton size="small" onClick={() => setJobsDialogSearch("")}>
-                      <CloseIcon sx={{ fontSize: "14px" }} />
-                    </IconButton>
-                  )}
-                </Box>
-              ),
-              sx: {
-                borderRadius: "8px", fontSize: "13px",
-                backgroundColor: COLORS.bgPage,
-                "& .MuiOutlinedInput-notchedOutline": { borderColor: COLORS.border },
-              },
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+// ============================================================
+// CUMULATIVE PIPELINE
+// ============================================================
+
+const CumulativePipelineChart = ({
+  data,
+  loading = false,
+}) => {
+  const safeData = data.filter(
+    (item) =>
+      Number(item.value) >= 0
+  );
+
+  const maxValue = Math.max(
+    ...safeData.map(
+      (item) =>
+        Number(item.value) || 0
+    ),
+    1
+  );
+
+  const chartHeight = 320;
+  const chartWidth = 430;
+  const centerX = 155;
+  const topY = 18;
+  const stageHeight = 39;
+  const stageGap = 2;
+
+  const getWidth = (value) => {
+    const ratio = Math.max(
+      0.16,
+      Math.min(
+        1,
+        (Number(value) || 0) /
+          maxValue
+      )
+    );
+
+    return 285 * ratio;
+  };
+
+  const pointsForStage = (
+    topWidth,
+    bottomWidth,
+    y
+  ) => {
+    const topLeft =
+      centerX - topWidth / 2;
+
+    const topRight =
+      centerX + topWidth / 2;
+
+    const bottomLeft =
+      centerX - bottomWidth / 2;
+
+    const bottomRight =
+      centerX + bottomWidth / 2;
+
+    return [
+      `${topLeft},${y}`,
+      `${topRight},${y}`,
+      `${bottomRight},${
+        y + stageHeight
+      }`,
+      `${bottomLeft},${
+        y + stageHeight
+      }`,
+    ].join(" ");
+  };
+
+  return (
+    <Box
+      sx={{
+        minWidth: 0,
+        width: "100%",
+        overflow: "hidden",
+      }}
+    >
+      <Typography
+        sx={{
+          fontSize: 10.5,
+          fontWeight: 700,
+          color: COLORS.textMuted,
+          letterSpacing: 0.5,
+          mb: 1.5,
+        }}
+      >
+        MAIN FLOW
+      </Typography>
+
+      <Box
+        sx={{
+          width: "100%",
+          height: chartHeight,
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {loading ? (
+          <Box
+            sx={{
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color:
+                COLORS.textMuted,
+              fontSize: 13,
             }}
-            sx={{ minWidth: 200, flex: 1 }}
+          >
+            Loading pipeline...
+          </Box>
+        ) : (
+          <svg
+            viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+            width="100%"
+            height="100%"
+            preserveAspectRatio="xMidYMid meet"
+            style={{
+              display: "block",
+              overflow: "visible",
+            }}
+          >
+            {safeData.map(
+              (item, index) => {
+                const value =
+                  Number(
+                    item.value
+                  ) || 0;
+
+                const nextValue =
+                  index <
+                  safeData.length - 1
+                    ? Number(
+                        safeData[
+                          index + 1
+                        ].value
+                      ) || 0
+                    : Math.max(
+                        value * 0.72,
+                        1
+                      );
+
+                const topWidth =
+                  getWidth(value);
+
+                const bottomWidth =
+                  getWidth(nextValue);
+
+                const y =
+                  topY +
+                  index *
+                    (stageHeight +
+                      stageGap);
+
+                const maxStageWidth =
+                  Math.max(
+                    topWidth,
+                    bottomWidth
+                  );
+
+                const labelX =
+                  centerX +
+                  maxStageWidth / 2 +
+                  16;
+
+                const valueX =
+                  centerX -
+                  maxStageWidth / 2 -
+                  14;
+
+                return (
+                  <g
+                    key={item.label}
+                  >
+                    <polygon
+                      points={pointsForStage(
+                        topWidth,
+                        bottomWidth,
+                        y
+                      )}
+                      fill={item.color}
+                    />
+
+                    <text
+                      x={valueX}
+                      y={
+                        y +
+                        stageHeight / 2 +
+                        4
+                      }
+                      textAnchor="end"
+                      fill="#64748B"
+                      fontSize="12"
+                      fontWeight="500"
+                    >
+                      {value}
+                    </text>
+
+                    <text
+                      x={labelX}
+                      y={
+                        y +
+                        stageHeight / 2 +
+                        4
+                      }
+                      textAnchor="start"
+                      fill="#111827"
+                      fontSize="12"
+                      fontWeight="700"
+                    >
+                      {item.label ===
+                      "New Applications"
+                        ? "Applications"
+                        : item.label}
+                    </text>
+                  </g>
+                );
+              }
+            )}
+          </svg>
+        )}
+      </Box>
+
+      <Box
+        sx={{
+          mt: 1.5,
+          px: 1.5,
+          py: 1,
+          border:
+            "1px solid #FECACA",
+          background: "#FFF5F5",
+          borderRadius: "12px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent:
+            "space-between",
+          gap: 1,
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            minWidth: 0,
+          }}
+        >
+          <Box
+            sx={{
+              width: 30,
+              height: 30,
+              borderRadius: "50%",
+              background: "#fff",
+              border:
+                "1px solid #FECACA",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: COLORS.closed,
+              fontSize: 16,
+              flexShrink: 0,
+            }}
+          >
+            ↪
+          </Box>
+
+          <Typography
+            sx={{
+              fontSize: 14,
+              fontWeight: 700,
+              color: COLORS.closed,
+              whiteSpace: "nowrap",
+            }}
+          >
+            Rejected Stage
+          </Typography>
+        </Box>
+
+        <Typography
+          sx={{
+            fontSize: 18,
+            fontWeight: 800,
+            color: COLORS.closed,
+          }}
+        >
+          {loading
+            ? "..."
+            : safeData.find(
+                (item) =>
+                  item.label ===
+                  "Rejected"
+              )?.value ?? 0}
+        </Typography>
+      </Box>
+    </Box>
+  );
+};
+
+// ============================================================
+// PIPELINE CHART
+// ============================================================
+
+const PipelineChart = ({
+  data,
+  loading = false,
+  type = "current",
+}) => {
+  if (type === "cumulative") {
+    return (
+      <CumulativePipelineChart
+        data={data}
+        loading={loading}
+      />
+    );
+  }
+
+  return (
+    <CurrentPipelineChart
+      data={data}
+      loading={loading}
+    />
+  );
+};
+
+// ============================================================
+// HELPER
+// ============================================================
+
+const latestValue = (values) => {
+  if (
+    !Array.isArray(values) ||
+    values.length === 0
+  ) {
+    return 0;
+  }
+
+  return (
+    Number(
+      values[
+        values.length - 1
+      ]
+    ) || 0
+  );
+};
+
+// ============================================================
+// MAIN PAGE
+// ============================================================
+
+const OrganizationOverview = ({
+  orgId,
+}) => {
+  // ==========================================================
+  // STATES
+  // ==========================================================
+
+  const [
+    userType,
+    setUserType,
+  ] = useState("current");
+
+  const [
+    selectedSubFunction,
+    setSelectedSubFunction,
+  ] = useState("all");
+
+  // Interview chart:
+  // line / bar
+  const [
+    interviewChartType,
+    setInterviewChartType,
+  ] = useState("line");
+
+  // Interview API:
+  // current / cumulative
+  const [
+    interviewType,
+    setInterviewType,
+  ] = useState("current");
+
+  const [
+    pipelineType,
+    setPipelineType,
+  ] = useState("current");
+
+  const [
+    experienceType,
+    setExperienceType,
+  ] = useState("donut");
+
+  const [
+    offerType,
+    setOfferType,
+  ] = useState("current");
+
+  // ==========================================================
+  // TOTAL JOBS API
+  // ==========================================================
+
+  const {
+    data:
+      jobOverviewResponse,
+    isLoading:
+      isJobOverviewLoading,
+  } =
+    useGetJobOverviewQuery(
+      {
+        organisationId: orgId,
+        groupBy: "month",
+        periodCount: 6,
+        status: "all",
+
+        filterBySubfunction:
+          selectedSubFunction ===
+          "all"
+            ? undefined
+            : selectedSubFunction,
+
+        country: "all",
+        allTime: true,
+      },
+      {
+        skip: !orgId,
+      }
+    );
+
+  // ==========================================================
+  // TOTAL POSITIONS API
+  // ==========================================================
+
+  const {
+    data:
+      totalPositionsResponse,
+    isLoading:
+      isTotalPositionsLoading,
+  } =
+    useGetTotalPositionsQuery(
+      {
+        organisationId: orgId,
+        groupBy: "month",
+        periodCount: 6,
+        status: "all",
+        countsType: "cumulative",
+
+        filterBySubfunction:
+          selectedSubFunction ===
+          "all"
+            ? undefined
+            : selectedSubFunction,
+
+        country: "all",
+        allTime: true,
+      },
+      {
+        skip: !orgId,
+      }
+    );
+
+  // ==========================================================
+  // CANDIDATE PIPELINE API
+  // ==========================================================
+
+  const {
+    data:
+      candidateFunnelResponse,
+    isLoading:
+      isCandidateFunnelLoading,
+  } =
+    useGetCandidateFunnelTrendQuery(
+      {
+        organisationId: orgId,
+        groupBy: "month",
+        periodCount: 6,
+        status: "all",
+
+        countsType:
+          pipelineType,
+
+        filterBySubfunction:
+          selectedSubFunction ===
+          "all"
+            ? undefined
+            : selectedSubFunction,
+
+        country: "all",
+        allTime: true,
+      },
+      {
+        skip: !orgId,
+      }
+    );
+
+  // ==========================================================
+  // NEW: INTERVIEW TREND API
+  // ==========================================================
+  //
+  // This is the important integration.
+  //
+  // current:
+  // counts_type=current
+  //
+  // cumulative:
+  // counts_type=cumulative
+  //
+  // selected sub-function is automatically sent.
+  // ==========================================================
+
+  const {
+    data:
+      interviewTrendResponse,
+
+    isLoading:
+      isInterviewTrendLoading,
+
+    isFetching:
+      isInterviewTrendFetching,
+  } =
+    useGetInterviewTrendQuery(
+      {
+        organisationId: orgId,
+
+        groupBy: "month",
+
+        periodCount: 6,
+
+        status: "all",
+
+        countsType:
+          interviewType,
+
+        filterBySubfunction:
+          selectedSubFunction ===
+          "all"
+            ? undefined
+            : selectedSubFunction,
+
+        country: "all",
+
+        allTime: true,
+      },
+      {
+        skip: !orgId,
+      }
+    );
+
+  // ==========================================================
+  // OFFER TREND API
+  // ==========================================================
+  //
+  // Current / cumulative is controlled by offerType.
+  // The selected sub-function is also passed to the API.
+  // ==========================================================
+
+  const {
+    data: offerTrendResponse,
+    isLoading: isOfferTrendLoading,
+    isFetching: isOfferTrendFetching,
+  } = useGetOfferTrendQuery(
+    {
+      organisationId: orgId,
+      groupBy: "month",
+      periodCount: 6,
+      status: "all",
+      countsType: offerType,
+      filterBySubfunction:
+        selectedSubFunction === "all"
+          ? undefined
+          : selectedSubFunction,
+      country: "all",
+      allTime: true,
+    },
+    {
+      skip: !orgId,
+    }
+  );
+
+  // ==========================================================
+  // JOB RESPONSE
+  // ==========================================================
+
+  const jobOverview =
+    jobOverviewResponse?.data;
+
+  const totalJobs =
+    jobOverview
+      ?.total_jobs
+      ?.value ?? 0;
+
+  const openJobs =
+    jobOverview
+      ?.total_jobs
+      ?.open_jobs
+      ?.value ?? 0;
+
+  const closedJobs =
+    jobOverview
+      ?.total_jobs
+      ?.closed_jobs
+      ?.value ?? 0;
+
+  const holdJobs =
+    jobOverview
+      ?.total_jobs
+      ?.on_hold_jobs
+      ?.value ?? 0;
+
+  const jobBreakdown =
+    jobOverview
+      ?.total_jobs
+      ?.breakdown ?? {};
+
+  const jobGraph =
+    Object.values(
+      jobBreakdown
+    ).map(
+      (value) =>
+        Number(value) || 0
+    );
+
+  const jobsData = {
+    total: totalJobs,
+    open: openJobs,
+    closed: closedJobs,
+    hold: holdJobs,
+
+    graph:
+      jobGraph.length > 0
+        ? jobGraph
+        : [0],
+
+    loading:
+      isJobOverviewLoading,
+  };
+
+  // ==========================================================
+  // TOTAL POSITIONS RESPONSE
+  // ==========================================================
+
+  const totalPositionsData =
+    totalPositionsResponse?.data;
+
+  const totalPositions =
+    totalPositionsData?.value ?? 0;
+
+  const openPositions =
+    totalPositionsData
+      ?.open_positions
+      ?.value ?? 0;
+
+  const closedPositions =
+    totalPositionsData
+      ?.closed_positions
+      ?.value ?? 0;
+
+  const holdPositions =
+    totalPositionsData
+      ?.on_hold_positions
+      ?.value ?? 0;
+
+  const positionBreakdown =
+    totalPositionsData
+      ?.breakdown ?? {};
+
+  const positionGraph =
+    Object.values(
+      positionBreakdown
+    ).map(
+      (value) =>
+        Number(value) || 0
+    );
+
+  const positionsData = {
+    total: totalPositions,
+    open: openPositions,
+    closed: closedPositions,
+    hold: holdPositions,
+
+    graph:
+      positionGraph.length > 0
+        ? positionGraph
+        : [0],
+
+    loading:
+      isTotalPositionsLoading,
+  };
+
+  // ==========================================================
+  // CANDIDATE PIPELINE
+  // ==========================================================
+
+  const candidateFunnel =
+    candidateFunnelResponse?.data;
+
+  const pipelineData = [
+    {
+      label: "New Applications",
+      value: latestValue(
+        candidateFunnel?.matched
+      ),
+      color: "#7890B5",
+    },
+
+    {
+      label: "Shortlisted",
+      value: latestValue(
+        candidateFunnel?.shortlisted
+      ),
+      color: "#2962E8",
+    },
+
+    {
+      label: "Interview",
+      value: latestValue(
+        candidateFunnel?.interviewing
+      ),
+      color: "#7B3FE4",
+    },
+
+    {
+      label: "Selected",
+      value: latestValue(
+        candidateFunnel?.selected
+      ),
+      color: "#22A55A",
+    },
+
+    {
+      label: "Offers",
+      value: latestValue(
+        candidateFunnel?.offers
+      ),
+      color: "#E88A00",
+    },
+
+    {
+      label: "Onboarded",
+      value: latestValue(
+        candidateFunnel?.onboarded
+      ),
+      color: "#218B52",
+    },
+
+    {
+      label: "Rejected",
+      value: latestValue(
+        candidateFunnel?.rejected
+      ),
+      color: "#E53935",
+    },
+  ];
+
+  // ==========================================================
+  // INTERVIEW API RESPONSE
+  // ==========================================================
+
+  const interviewApiData =
+    interviewTrendResponse?.data || {};
+
+  // ==========================================================
+  // INTERVIEW LABELS
+  // ==========================================================
+
+  const interviewLabels =
+    Array.isArray(
+      interviewApiData.labels
+    ) &&
+    interviewApiData.labels.length > 0
+      ? interviewApiData.labels
+      : ["all"];
+
+  // ==========================================================
+  // INTERVIEW DATA
+  //
+  // IMPORTANT:
+  //
+  // We no longer use DATA.interviews here.
+  //
+  // The values now come directly from:
+  //
+  // interview_scheduled
+  // interview_rescheduled
+  // interview_completed
+  // interview_cancelled
+  // interview_no_show
+  //
+  // "Not Conducted" is intentionally excluded — the target UI
+  // only shows these 5 statuses.
+  //
+  // `interviewType` is sent to the API, therefore the
+  // returned arrays already represent current/cumulative.
+  // ==========================================================
+
+  const interviewData =
+    useMemo(() => {
+      const createInterviewItem = ({
+        label,
+        apiValues,
+        color,
+      }) => {
+        const values =
+          Array.isArray(apiValues)
+            ? apiValues.map(
+                (value) =>
+                  Number(value) || 0
+              )
+            : [];
+
+        return {
+          label,
+
+          value: latestValue(
+            values
+          ),
+
+          color,
+
+          line:
+            values.length > 0
+              ? values
+              : [0],
+        };
+      };
+
+      return [
+        createInterviewItem({
+          label: "Scheduled",
+          apiValues:
+            interviewApiData.interview_scheduled,
+          color:
+            COLORS.scheduled,
+        }),
+
+        createInterviewItem({
+          label: "Rescheduled",
+          apiValues:
+            interviewApiData.interview_rescheduled,
+          color:
+            COLORS.rescheduled,
+        }),
+
+        createInterviewItem({
+          label: "Completed",
+          apiValues:
+            interviewApiData.interview_completed,
+          color:
+            COLORS.completed,
+        }),
+
+        createInterviewItem({
+          label: "Cancelled",
+          apiValues:
+            interviewApiData.interview_cancelled,
+          color:
+            COLORS.cancelled,
+        }),
+
+        createInterviewItem({
+          label: "No Show",
+          apiValues:
+            interviewApiData.interview_no_show,
+          color:
+            COLORS.noShow,
+        }),
+      ];
+    }, [
+      interviewApiData.interview_scheduled,
+      interviewApiData.interview_rescheduled,
+      interviewApiData.interview_completed,
+      interviewApiData.interview_cancelled,
+      interviewApiData.interview_no_show,
+    ]);
+
+  // ==========================================================
+  // INTERVIEW LOADING
+  // ==========================================================
+
+  const interviewLoading =
+    isInterviewTrendLoading ||
+    isInterviewTrendFetching;
+
+  // ==========================================================
+  // OFFER API RESPONSE
+  // ==========================================================
+
+  const offerApiData =
+    offerTrendResponse?.data || {};
+
+  const offerData = useMemo(() => {
+    const getValues = (values) =>
+      Array.isArray(values)
+        ? values.map((value) => Number(value) || 0)
+        : [];
+
+    const latest = (values) =>
+      values.length > 0
+        ? values[values.length - 1]
+        : 0;
+
+    return [
+      {
+        label: "Released",
+        value: latest(getValues(offerApiData.offer_released)),
+        color: "#E88A00",
+      },
+      {
+        label: "Accepted",
+        value: latest(getValues(offerApiData.offer_accepted)),
+        color: "#26A69A",
+      },
+      {
+        label: "Rejected",
+        value: latest(getValues(offerApiData.offer_rejected)),
+        color: "#E53935",
+      },
+      {
+        label: "Revoked",
+        value: latest(getValues(offerApiData.offer_revoked)),
+        color: "#C54B0A",
+      },
+    ];
+  }, [
+    offerApiData.offer_released,
+    offerApiData.offer_accepted,
+    offerApiData.offer_rejected,
+    offerApiData.offer_revoked,
+  ]);
+
+  const offerLoading =
+    isOfferTrendLoading ||
+    isOfferTrendFetching;
+
+  // ==========================================================
+  // PAGE
+  // ==========================================================
+
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        width: "100%",
+        background:
+          COLORS.background,
+        boxSizing: "border-box",
+
+        p: {
+          xs: 1,
+          sm: 1.5,
+          md: 2,
+        },
+
+        overflowX: "hidden",
+      }}
+    >
+      {/* ====================================================
+          FILTER ROW
+      ==================================================== */}
+
+      <Box
+        sx={{
+          minHeight: 68,
+          width: "100%",
+          background: "#fff",
+          border:
+            `1px solid ${COLORS.border}`,
+          borderRadius: "10px",
+          px: 1.5,
+          py: 1,
+          boxSizing: "border-box",
+          display: "flex",
+          alignItems: "center",
+          justifyContent:
+            "space-between",
+          gap: 2,
+          flexWrap: "wrap",
+          overflow: "visible",
+          mb: 1.5,
+          position: "relative",
+          zIndex: 20,
+        }}
+      >
+        <Box
+          sx={{
+            minWidth: 0,
+            flexShrink: 0,
+          }}
+        >
+          <Toggle
+            value={userType}
+            onChange={setUserType}
+            options={[
+              {
+                value: "all",
+                label: "All Users",
+              },
+              {
+                value: "current",
+                label: "Current User",
+              },
+            ]}
           />
         </Box>
 
-        <DialogContent sx={{ p: 0, maxHeight: 420 }}>
-          {jobsDialogData.length === 0 ? (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-              <Typography sx={{ fontSize: 13, color: COLORS.textMuted }}>No jobs found.</Typography>
-            </Box>
-          ) : (
-            <Box sx={{ px: 1, py: 1 }}>
-              <JobList jobs={jobsDialogData} onViewJob={(job) => { closeJobsDialog(); handleViewJob(job); }} />
-            </Box>
-          )}
-        </DialogContent>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            flexWrap: "wrap",
+            minWidth: 0,
+            marginLeft: "auto",
+            justifyContent: "flex-end",
+          }}
+        >
+          <Filter>
+            All Jobs
+          </Filter>
 
-        <DialogActions sx={{ px: 3, py: 1.5, borderTop: `1px solid ${COLORS.border}` }}>
-          <Button onClick={closeJobsDialog} sx={{ color: COLORS.royalBlue, fontSize: 13, textTransform: "none" }}>
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </DashboardContainer>
+          <Filter>
+            All Countries
+          </Filter>
+
+          <SubFunctionDropdown
+            value={
+              selectedSubFunction
+            }
+            onChange={
+              setSelectedSubFunction
+            }
+          />
+
+          <Filter>
+            All Time
+          </Filter>
+
+          <IconButton
+            sx={{
+              width: 44,
+              height: 44,
+              flexShrink: 0,
+              background: "#EFF4FF",
+              color: COLORS.blue,
+
+              "&:hover": {
+                background: "#E4ECFF",
+              },
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: 22,
+                lineHeight: 1,
+                fontWeight: 700,
+              }}
+            >
+              ↓
+            </Typography>
+          </IconButton>
+        </Box>
+      </Box>
+
+      {/* ====================================================
+          KPI ROW
+      ==================================================== */}
+
+      <Box
+        sx={{
+          display: "grid",
+
+          gridTemplateColumns: {
+            xs:
+              "minmax(0, 1fr)",
+
+            sm:
+              "minmax(0, 1fr)",
+
+            md:
+              "repeat(2, minmax(0, 1fr))",
+
+            lg:
+              "repeat(3, minmax(0, 1fr))",
+          },
+
+          gap: 1.5,
+          width: "100%",
+          minWidth: 0,
+          maxWidth: "100%",
+          alignItems: "stretch",
+
+          "& > *": {
+            minWidth: 0,
+            width: "100%",
+            maxWidth: "100%",
+          },
+        }}
+      >
+        <KpiCard
+          title="Total Jobs"
+          data={jobsData}
+        />
+
+        <KpiCard
+          title="Total Positions"
+          data={positionsData}
+        />
+
+        <CandidateCard />
+      </Box>
+
+      {/* ====================================================
+          LOWER CHARTS
+      ==================================================== */}
+
+      <Box
+        sx={{
+          display: "grid",
+
+          gridTemplateColumns: {
+            xs:
+              "minmax(0, 1fr)",
+
+            md:
+              "repeat(2, minmax(0, 1fr))",
+
+            lg:
+              "minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.1fr)",
+          },
+
+          gap: 1.5,
+
+          mt: 1.5,
+
+          width: "100%",
+
+          minWidth: 0,
+
+          maxWidth: "100%",
+
+          "& > *": {
+            minWidth: 0,
+            maxWidth: "100%",
+          },
+        }}
+      >
+        {/* ==================================================
+            INTERVIEWS
+        ================================================== */}
+
+        <ChartCard>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent:
+                "space-between",
+              gap: 1,
+              mb: 1.8,
+              minWidth: 0,
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: 15.5,
+                fontWeight: 700,
+                color: COLORS.text,
+                lineHeight: 1.15,
+                maxWidth: 105,
+              }}
+            >
+              Interviews
+              <br />
+              Count by Status
+            </Typography>
+
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.8,
+                flexShrink: 0,
+                flexWrap: "nowrap",
+              }}
+            >
+              {/* LINE / BAR */}
+
+              <Toggle
+                small
+                value={
+                  interviewChartType
+                }
+                options={[
+                  {
+                    value: "line",
+                    label: "Line",
+                  },
+                  {
+                    value: "bar",
+                    label: "Bar",
+                  },
+                ]}
+                onChange={
+                  setInterviewChartType
+                }
+              />
+
+              {/* CURRENT / CUMULATIVE */}
+
+              <Toggle
+                small
+                value={
+                  interviewType
+                }
+                options={[
+                  {
+                    value: "current",
+                    label: "Current",
+                  },
+                  {
+                    value:
+                      "cumulative",
+                    label:
+                      "Cumulative",
+                  },
+                ]}
+                onChange={
+                  setInterviewType
+                }
+              />
+
+              <IconButton
+                size="small"
+                sx={{
+                  width: 22,
+                  height: 22,
+                  color:
+                    COLORS.textMuted,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: 14,
+                  }}
+                >
+                  ⤢
+                </Typography>
+              </IconButton>
+            </Box>
+          </Box>
+
+          {/* API-DRIVEN INTERVIEW CHART */}
+
+          <InterviewStatusChart
+            data={interviewData}
+            chartType={
+              interviewChartType
+            }
+            labels={
+              interviewLabels
+            }
+            loading={
+              interviewLoading
+            }
+          />
+        </ChartCard>
+
+        {/* ==================================================
+            SUB FUNCTIONS
+        ================================================== */}
+
+        <ChartCard>
+          <CardHeader
+            title="Candidates by Sub-function"
+          />
+
+          <SubFunctionBars
+            data={
+              DATA.subFunctions
+            }
+          />
+        </ChartCard>
+
+        {/* ==================================================
+            PIPELINE
+        ================================================== */}
+
+        <ChartCard
+          sx={{
+            gridColumn: {
+              xs: "auto",
+              md: "auto",
+              lg: "3",
+            },
+
+            gridRow: {
+              xs: "auto",
+              md: "auto",
+              lg: "span 2",
+            },
+          }}
+        >
+          <CardHeader
+            title={
+              <>
+                Candidate Pipeline
+
+                <Box
+                  component="span"
+                  sx={{
+                    color:
+                      COLORS.textSecondary,
+                    fontWeight: 500,
+                    ml: 0.5,
+                  }}
+                >
+                  :{" "}
+                  {pipelineType ===
+                  "current"
+                    ? "Current"
+                    : "Cumulative"}{" "}
+                  Pipeline
+                </Box>
+              </>
+            }
+            toggle={{
+              value:
+                pipelineType,
+
+              options: [
+                {
+                  value: "current",
+                  label: "Current",
+                },
+                {
+                  value:
+                    "cumulative",
+                  label:
+                    "Cumulative",
+                },
+              ],
+            }}
+            onToggle={
+              setPipelineType
+            }
+          />
+
+          <PipelineChart
+            data={pipelineData}
+            loading={
+              isCandidateFunnelLoading
+            }
+            type={
+              pipelineType
+            }
+          />
+        </ChartCard>
+
+        {/* ==================================================
+            EXPERIENCE
+        ================================================== */}
+
+        <ChartCard>
+          <CardHeader
+            title="Candidate by Experience"
+            toggle={{
+              value:
+                experienceType,
+
+              options: [
+                {
+                  value: "donut",
+                  label: "Donut",
+                },
+                {
+                  value: "bar",
+                  label: "Bar",
+                },
+              ],
+            }}
+            onToggle={
+              setExperienceType
+            }
+          />
+
+          {experienceType ===
+          "donut" ? (
+            <Donut
+              data={
+                DATA.experience
+              }
+              total={
+                DATA.candidates
+                  .total
+              }
+            />
+          ) : (
+            <HorizontalBars
+              data={
+                DATA.experience
+              }
+              maxValue={70}
+            />
+          )}
+        </ChartCard>
+
+        {/* ==================================================
+            OFFER STATUS
+        ================================================== */}
+
+        <ChartCard>
+          <CardHeader
+            title="Offer Status"
+            toggle={{
+              value:
+                offerType,
+
+              options: [
+                {
+                  value: "current",
+                  label: "Current",
+                },
+                {
+                  value:
+                    "cumulative",
+                  label:
+                    "Cumulative",
+                },
+              ],
+            }}
+            onToggle={
+              setOfferType
+            }
+          />
+
+          <HorizontalBars
+            data={offerData}
+            maxValue={
+              Math.max(
+                ...offerData.map(
+                  (item) =>
+                    Number(item.value) || 0
+                ),
+                1
+              )
+            }
+          />
+
+          {offerLoading && (
+            <Typography
+              sx={{
+                fontSize: 10,
+                color: COLORS.textMuted,
+                mt: 0.5,
+                textAlign: "right",
+              }}
+            >
+              Updating...
+            </Typography>
+          )}
+        </ChartCard>
+      </Box>
+    </Box>
   );
 };
 

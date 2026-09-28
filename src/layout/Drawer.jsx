@@ -107,6 +107,17 @@ const sidebarSections = [
       },
     ],
   },
+  {
+    // title: "Help",
+    items: [
+      {
+        label: "Subscriptions",
+        icon: <Work />,
+        path: "/account-manager/subscriptions",
+        disabled: false,
+      },
+    ],
+  },
 ];
 
 /* ─────────────────────────────────────────────

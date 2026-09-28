@@ -2,42 +2,255 @@ import { api } from "../api/api.js";
 
 export const OrganizationOverviewService = api.injectEndpoints({
   endpoints: (builder) => ({
-    getJobAnalyticsV2: builder.query({
-  query: ({
-    organisationId,
-    groupBy = "month",
-    periodCount = "all",
-    status = "all",
-    countsType = "cumulative",
-    filterBySubfunction,
-    country,
-  }) => {
-    const params = new URLSearchParams({
-      organisation_id: organisationId,
-      group_by: groupBy,
-      status,
-      counts_type: countsType,
-      country: !country || country === "all" ? "all_locations" : country,
-    });
+    // ==========================================================
+    // TOTAL JOBS / JOB OVERVIEW
+    // ==========================================================
+    getJobOverview: builder.query({
+      query: ({
+        organisationId,
+        groupBy = "month",
+        periodCount = 6,
+        status = "all",
+        filterBySubfunction,
+        country = "all",
+        allTime = false,
+      }) => {
+        const params = new URLSearchParams({
+          organisation_id: organisationId,
+          group_by: groupBy,
+          period_count: String(periodCount),
+          status,
+          country:
+            !country || country === "all"
+              ? "all_locations"
+              : country,
+          all_time: String(allTime),
+        });
 
-    if (periodCount === "all") {
-      params.append("all_time", "true");
-    } else {
-      params.append("period_count", periodCount);
-    }
+        if (filterBySubfunction) {
+          params.append(
+            "filter_by_subfunction",
+            filterBySubfunction
+          );
+        }
 
-    if (filterBySubfunction) {
-      params.append("sub_function", filterBySubfunction);
-    }
+        return `/acc/analytics/jobs/overview?${params.toString()}`;
+      },
 
-    return `/acc/organisations/job-analytics_v2?${params.toString()}`;
-  },
-  providesTags: ["JobAnalytics"],
-}),
+      providesTags: ["JobAnalytics"],
+    }),
+
+    // ==========================================================
+    // TOTAL POSITIONS
+    // ==========================================================
+    getTotalPositions: builder.query({
+      query: ({
+        organisationId,
+        groupBy = "month",
+        periodCount = 6,
+        status = "all",
+        countsType = "cumulative",
+        filterBySubfunction,
+        country = "all",
+        allTime = false,
+      }) => {
+        const params = new URLSearchParams({
+          organisation_id: organisationId,
+          group_by: groupBy,
+          period_count: String(periodCount),
+          status,
+          counts_type: countsType,
+          country:
+            !country || country === "all"
+              ? "all_locations"
+              : country,
+          all_time: String(allTime),
+        });
+
+        if (filterBySubfunction) {
+          params.append(
+            "filter_by_subfunction",
+            filterBySubfunction
+          );
+        }
+
+        return `/acc/analytics/jobs/total-positions?${params.toString()}`;
+      },
+
+      providesTags: ["TotalPositions"],
+    }),
+
+    // ==========================================================
+    // CANDIDATE FUNNEL TREND
+    // ==========================================================
+    getCandidateFunnelTrend: builder.query({
+      query: ({
+        organisationId,
+        groupBy = "month",
+        periodCount = 6,
+        status = "all",
+        countsType = "cumulative",
+        filterBySubfunction,
+        country = "all",
+        allTime = false,
+      }) => {
+        const params = new URLSearchParams({
+          organisation_id: organisationId,
+          group_by: groupBy,
+          period_count: String(periodCount),
+          status,
+          counts_type: countsType,
+          country:
+            !country || country === "all"
+              ? "all_locations"
+              : country,
+          all_time: String(allTime),
+        });
+
+        if (filterBySubfunction) {
+          params.append(
+            "filter_by_subfunction",
+            filterBySubfunction
+          );
+        }
+
+        return `/acc/analytics/jobs/funnel-trend?${params.toString()}`;
+      },
+
+      providesTags: ["CandidateFunnelTrend"],
+    }),
+
+    // ==========================================================
+    // INTERVIEW TREND
+    // ==========================================================
+    getInterviewTrend: builder.query({
+      query: ({
+        organisationId,
+        groupBy = "month",
+        periodCount = 6,
+        status = "all",
+        countsType = "current",
+        filterBySubfunction,
+        country = "all",
+        allTime = true,
+      }) => {
+        const params = new URLSearchParams({
+          organisation_id: organisationId,
+          group_by: groupBy,
+          period_count: String(periodCount),
+          status,
+          counts_type: countsType,
+          country:
+            !country || country === "all"
+              ? "all_locations"
+              : country,
+          all_time: String(allTime),
+        });
+
+        if (filterBySubfunction) {
+          params.append(
+            "filter_by_subfunction",
+            filterBySubfunction
+          );
+        }
+
+        return `/acc/analytics/jobs/interview-trend?${params.toString()}`;
+      },
+
+      providesTags: ["InterviewTrend"],
+    }),
+
+    // ==========================================================
+    // CANDIDATES EXPERIENCE
+    // ==========================================================
+    getCandidatesExperience: builder.query({
+      query: ({
+        organisationId,
+        groupBy = "month",
+        periodCount = 6,
+        status = "all",
+        filterBySubfunction,
+        country = "all",
+        allTime = true,
+      }) => {
+        const params = new URLSearchParams({
+          organisation_id: organisationId,
+          group_by: groupBy,
+          period_count: String(periodCount),
+          status,
+          country:
+            !country || country === "all"
+              ? "all_locations"
+              : country,
+          all_time: String(allTime),
+        });
+
+        if (filterBySubfunction) {
+          params.append(
+            "filter_by_subfunction",
+            filterBySubfunction
+          );
+        }
+
+        return `/acc/analytics/jobs/candidates-experience?${params.toString()}`;
+      },
+
+      providesTags: ["CandidatesExperience"],
+    }),
+
+    // ==========================================================
+    // OFFER TREND
+    // ==========================================================
+    getOfferTrend: builder.query({
+      query: ({
+        organisationId,
+        groupBy = "month",
+        periodCount = 6,
+        status = "all",
+        countsType = "cumulative",
+        filterBySubfunction,
+        country = "all",
+        allTime = true,
+      }) => {
+        const params = new URLSearchParams({
+          organisation_id: organisationId,
+          group_by: groupBy,
+          period_count: String(periodCount),
+          status,
+          counts_type: countsType,
+          country:
+            !country || country === "all"
+              ? "all_locations"
+              : country,
+          all_time: String(allTime),
+        });
+
+        if (filterBySubfunction) {
+          params.append(
+            "filter_by_subfunction",
+            filterBySubfunction
+          );
+        }
+
+        return `/acc/analytics/jobs/offer-trend?${params.toString()}`;
+      },
+
+      providesTags: ["OfferTrend"],
+    }),
   }),
+
+  overrideExisting: false,
 });
 
-// ── Export hooks ──
+// ============================================================
+// EXPORT ALL HOOKS
+// ============================================================
+
 export const {
-  useGetJobAnalyticsV2Query,
+  useGetJobOverviewQuery,
+  useGetTotalPositionsQuery,
+  useGetCandidateFunnelTrendQuery,
+  useGetInterviewTrendQuery,
+  useGetCandidatesExperienceQuery,
+  useGetOfferTrendQuery,
 } = OrganizationOverviewService;
