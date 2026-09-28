@@ -72,30 +72,36 @@ const sidebarSections = [
     ],
   },
   {
-  title: "Workspace",
-  items: [
-    {
-      label: "Organization",
-      icon: <Business />,
-      path: "/account-manager/organization",
-    },
-    {
-      label: "User Management",
-      icon: <ManageAccountsOutlined />,
-      path: "/account-manager/user-management",
-    },
-    {
-      label: "Demo Requests",
-      icon: <MoveToInboxOutlined />,
-      path: "/account-manager/demo-requests",
-    },
-    {
-      label: "Candidates",
-      icon: <People />,
-      path: "/account-manager/candidates",
-    },
-  ],
-},
+    title: "Workspace",
+    items: [
+      {
+        label: "Organization",
+        icon: <Business />,
+        path: "/account-manager/organization",
+      },
+      {
+        label: "User Management",
+        icon: <ManageAccountsOutlined />,
+        path: "/account-manager/user-management",
+      },
+      {
+        label: "Demo Requests",
+        icon: <MoveToInboxOutlined />,
+        path: "/account-manager/demo-requests",
+      },
+      {
+        label: "Candidates",
+        icon: <People />,
+        path: "/account-manager/candidates",
+      },
+      {
+        label: "Subscriptions",
+        icon: <Work />,
+        path: "/account-manager/subscriptions",
+        disabled: false,
+      },
+    ],
+  },
   {
     title: "Help",
     items: [
@@ -107,17 +113,7 @@ const sidebarSections = [
       },
     ],
   },
-  {
-    // title: "Help",
-    items: [
-      {
-        label: "Subscriptions",
-        icon: <Work />,
-        path: "/account-manager/subscriptions",
-        disabled: false,
-      },
-    ],
-  },
+
 ];
 
 /* ─────────────────────────────────────────────
@@ -534,13 +530,13 @@ function CandidateModal({ open, onClose, requestUuid, jobTitle }) {
                       },
                       ...(c.availability
                         ? [
-                            {
-                              icon: (
-                                <AccessTimeOutlined sx={{ fontSize: 13 }} />
-                              ),
-                              text: c.availability,
-                            },
-                          ]
+                          {
+                            icon: (
+                              <AccessTimeOutlined sx={{ fontSize: 13 }} />
+                            ),
+                            text: c.availability,
+                          },
+                        ]
                         : []),
                     ].map(({ icon, text }, i) => (
                       <Box
@@ -1043,9 +1039,9 @@ function NotificationModal({ open, onClose }) {
                           "&:hover": isClosed
                             ? {}
                             : {
-                                backgroundColor: "#e64a19",
-                                boxShadow: "0 2px 8px rgba(255,87,34,0.3)",
-                              },
+                              backgroundColor: "#e64a19",
+                              boxShadow: "0 2px 8px rgba(255,87,34,0.3)",
+                            },
                         }}
                       >
                         {isClosed ? "Closed" : "Assign"}
@@ -1257,8 +1253,8 @@ const DrawerLayout = () => {
                     className={
                       item.label === "Organization"
                         ? location.pathname.startsWith(
-                            "/account-manager/organization",
-                          ) ||
+                          "/account-manager/organization",
+                        ) ||
                           location.pathname.startsWith(
                             "/account-manager/org/",
                           ) ||

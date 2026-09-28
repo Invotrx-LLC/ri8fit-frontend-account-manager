@@ -237,6 +237,45 @@ export const OrganizationOverviewService = api.injectEndpoints({
 
       providesTags: ["OfferTrend"],
     }),
+
+    // ==========================================================
+    // STAGE DETAILS
+    // ==========================================================
+    getStageDetails: builder.query({
+      query: ({
+        organisationId,
+        stage,
+        status = "all",
+        countsType = "current",
+        country = "all_locations",
+        filterBySubfunction,
+        page = 1,
+        pageSize = 10,
+      }) => ({
+        url: "/acc/analytics/jobs/stage-details",
+        method: "GET",
+        params: {
+          organisation_id: organisationId,
+          stage,
+          status,
+          counts_type: countsType,
+          country:
+            country === "all"
+              ? "all_locations"
+              : country,
+          page,
+          page_size: pageSize,
+
+          ...(filterBySubfunction
+            ? {
+                sub_function: filterBySubfunction,
+              }
+            : {}),
+        },
+      }),
+
+      providesTags: ["StageDetails"],
+    }),
   }),
 
   overrideExisting: false,
@@ -253,4 +292,5 @@ export const {
   useGetInterviewTrendQuery,
   useGetCandidatesExperienceQuery,
   useGetOfferTrendQuery,
+  useGetStageDetailsQuery,
 } = OrganizationOverviewService;
