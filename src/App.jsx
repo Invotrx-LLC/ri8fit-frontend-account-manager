@@ -31,7 +31,8 @@ import ChangePasswordPage from "./pages/Settings/ChangePasswordPage";
 import CreateRequisition from "./pages/OrgRequisitions/createJob";
 import MatchedCandidates from "./pages/OrgRequisitions/createJob/matchedCandidates";
 import ViewProfileDetails from "./pages/OrgRequisitions/createJob/ViewProfileDetails";
-
+import DemoRequests from "./pages/DemoRequests";
+import ProvisionSignup from "./pages/ProvisionSignup";
 const App = () => {
   return (
     <>
@@ -53,6 +54,8 @@ const App = () => {
           {/* ── Protected Routes ── */}
           <Route path="/account-manager" element={<DrawerLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
+            <Route index path="demo-requests" element={<DemoRequests />} />
+            
 
             {/* Dashboard */}
             <Route path="dashboard" element={<AmDashboard />} />
