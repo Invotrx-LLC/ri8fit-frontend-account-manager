@@ -94,28 +94,28 @@ const FloatingTooltip = ({ tip }) => {
           flipX ? "calc(-100% - 14px)" : "14px"
         }, ${flipY ? "calc(-100% - 14px)" : "14px"})`,
         zIndex: 2000,
-        minWidth: 150,
-        maxWidth: 240,
+        minWidth: 140,
+        maxWidth: 230,
         pointerEvents: "none",
-        borderRadius: "12px",
+        borderRadius: "10px",
         background: "rgba(15, 23, 42, 0.96)",
         color: "#fff",
         boxShadow: "0 18px 40px rgba(15,23,42,0.28)",
-        px: 1.4,
-        py: 1.1,
+        px: 1.2,
+        py: 0.9,
       }}
     >
-      <Typography sx={{ fontSize: 13, fontWeight: 700, lineHeight: 1.2 }}>
+      <Typography sx={{ fontSize: 11, fontWeight: 700, lineHeight: 1.2 }}>
         {tip.title}
       </Typography>
 
       {tip.total !== undefined && (
-        <Typography sx={{ fontSize: 11, color: "#93C5FD", mt: 0.3 }}>
+        <Typography sx={{ fontSize: 9.5, color: "#93C5FD", mt: 0.3 }}>
           Total: {tip.total}
         </Typography>
       )}
 
-      <Box sx={{ display: "grid", gap: 0.6, mt: 0.9 }}>
+      <Box sx={{ display: "grid", gap: 0.5, mt: 0.8 }}>
         {tip.rows.map((row, index) => (
           <Box
             key={`${row.label}-${index}`}
@@ -130,20 +130,20 @@ const FloatingTooltip = ({ tip }) => {
               {row.color && (
                 <Box
                   sx={{
-                    width: 8,
-                    height: 8,
+                    width: 7,
+                    height: 7,
                     borderRadius: "50%",
                     background: row.color,
                     flexShrink: 0,
                   }}
                 />
               )}
-              <Typography sx={{ fontSize: 12, color: "#E5E7EB" }}>
+              <Typography sx={{ fontSize: 10, color: "#E5E7EB" }}>
                 {row.label}
               </Typography>
             </Box>
 
-            <Typography sx={{ fontSize: 12, fontWeight: 700 }}>
+            <Typography sx={{ fontSize: 10, fontWeight: 700 }}>
               {row.value}
             </Typography>
           </Box>
@@ -233,6 +233,16 @@ const SUB_FUNCTION_OPTIONS = [
 ];
 
 // ============================================================
+// PERIOD OPTIONS
+// ============================================================
+
+const PERIOD_OPTIONS = [
+  { label: "Last 3 months", value: "3m", periodCount: 3, allTime: false },
+  { label: "Last 6 months", value: "6m", periodCount: 6, allTime: false },
+  { label: "All Time", value: "all", periodCount: 6, allTime: true },
+];
+
+// ============================================================
 // TOGGLE
 // ============================================================
 
@@ -243,7 +253,7 @@ const Toggle = ({ value, onChange, options, small = false }) => {
         display: "inline-flex",
         alignItems: "center",
         background: "#F1F5F9",
-        borderRadius: "9px",
+        borderRadius: "8px",
         padding: "2px",
         flexShrink: 0,
         maxWidth: "100%",
@@ -263,12 +273,12 @@ const Toggle = ({ value, onChange, options, small = false }) => {
               border: 0,
               outline: 0,
               appearance: "none",
-              px: small ? 1.5 : 2.6,
-              py: small ? 0.55 : 0.75,
-              borderRadius: "7px",
+              px: small ? 1.2 : 2.2,
+              py: small ? 0.45 : 0.6,
+              borderRadius: "6px",
               cursor: "pointer",
               fontFamily: "inherit",
-              fontSize: small ? 11.5 : 13,
+              fontSize: small ? 10 : 11.5,
               fontWeight: 600,
               color: active ? "#fff" : COLORS.textSecondary,
               background: active ? COLORS.blue : "transparent",
@@ -296,17 +306,17 @@ const Filter = ({ children }) => {
   return (
     <Box
       sx={{
-        height: 38,
-        px: 2,
+        height: 34,
+        px: 1.6,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         gap: 1,
         border: `1px solid ${COLORS.border}`,
-        borderRadius: "10px",
+        borderRadius: "8px",
         background: "#fff",
         color: COLORS.textSecondary,
-        fontSize: 13,
+        fontSize: 11.5,
         whiteSpace: "nowrap",
         flexShrink: 0,
         cursor: "pointer",
@@ -314,7 +324,7 @@ const Filter = ({ children }) => {
     >
       <span>{children}</span>
 
-      <span style={{ fontSize: 10, color: COLORS.textSecondary }}>▼</span>
+      <span style={{ fontSize: 8.5, color: COLORS.textSecondary }}>▼</span>
     </Box>
   );
 };
@@ -323,7 +333,12 @@ const Filter = ({ children }) => {
 // SUB FUNCTION DROPDOWN
 // ============================================================
 
-const SubFunctionDropdown = ({ value, onChange }) => {
+const SubFunctionDropdown = ({
+  value,
+  onChange,
+  options = SUB_FUNCTION_OPTIONS,
+  minWidth = { xs: 190, sm: 210, md: 240 },
+}) => {
   return (
     <Select
       value={value}
@@ -333,21 +348,21 @@ const SubFunctionDropdown = ({ value, onChange }) => {
       displayEmpty
       size="small"
       sx={{
-        minWidth: { xs: 220, sm: 250, md: 285 },
+        minWidth,
 
-        height: 42,
+        height: 34,
         background: "#fff",
-        borderRadius: "10px",
-        fontSize: 16,
+        borderRadius: "8px",
+        fontSize: 12,
         color: "#29313D",
         flexShrink: 0,
 
         "& .MuiSelect-select": {
           display: "flex",
           alignItems: "center",
-          py: 1,
-          px: 1.7,
-          pr: 5,
+          py: 0.8,
+          px: 1.4,
+          pr: 4.5,
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -369,6 +384,7 @@ const SubFunctionDropdown = ({ value, onChange }) => {
 
         "& .MuiSelect-icon": {
           color: "#777",
+          fontSize: 18,
         },
       }}
       MenuProps={{
@@ -377,13 +393,13 @@ const SubFunctionDropdown = ({ value, onChange }) => {
             mt: 0.5,
             borderRadius: "0 0 8px 8px",
             boxShadow: "0 4px 12px rgba(0,0,0,0.18)",
-            maxHeight: 360,
+            maxHeight: 320,
 
             "& .MuiMenuItem-root": {
-              minHeight: 58,
-              fontSize: 16,
+              minHeight: 40,
+              fontSize: 12,
               color: "#29313D",
-              px: 3,
+              px: 2.2,
 
               "&.Mui-selected": {
                 backgroundColor: "#EEF2FA",
@@ -401,7 +417,7 @@ const SubFunctionDropdown = ({ value, onChange }) => {
         },
       }}
     >
-      {SUB_FUNCTION_OPTIONS.map((option) => (
+      {options.map((option) => (
         <MenuItem key={option.value} value={option.value}>
           {option.label}
         </MenuItem>
@@ -563,9 +579,9 @@ const GraphLegend = () => {
         >
           <Box
             sx={{
-              width: 8,
-              height: 8,
-              minWidth: 8,
+              width: 7,
+              height: 7,
+              minWidth: 7,
               borderRadius: "50%",
               background: item.color,
             }}
@@ -573,7 +589,7 @@ const GraphLegend = () => {
 
           <Typography
             sx={{
-              fontSize: 9.5,
+              fontSize: 8.5,
               color: COLORS.textSecondary,
               lineHeight: 1,
               whiteSpace: "nowrap",
@@ -633,7 +649,7 @@ const StatusItem = ({
       <Typography
         sx={{
           width: "100%",
-          fontSize: 10.5,
+          fontSize: 9,
           fontWeight: 700,
           color: COLORS.text,
           lineHeight: 1,
@@ -662,7 +678,7 @@ const StatusItem = ({
       <Typography
         sx={{
           width: "100%",
-          fontSize: 9,
+          fontSize: 8,
           color: COLORS.textSecondary,
           lineHeight: 1,
           mt: 0.6,
@@ -778,7 +794,7 @@ const KpiCard = ({ title, data, hoverModel, onOpenAll, onOpenStatus }) => {
       >
         <Typography
           sx={{
-            fontSize: 14,
+            fontSize: 12,
             fontWeight: 600,
             color: COLORS.textSecondary,
             whiteSpace: "nowrap",
@@ -793,7 +809,7 @@ const KpiCard = ({ title, data, hoverModel, onOpenAll, onOpenStatus }) => {
 
         <Typography
           sx={{
-            fontSize: 40,
+            fontSize: 30,
             fontWeight: 800,
             color: COLORS.text,
             lineHeight: 0.95,
@@ -901,7 +917,7 @@ const MiniStat = ({ label, value }) => {
       <Typography
         sx={{
           width: "100%",
-          fontSize: 10.5,
+          fontSize: 9,
           color: COLORS.textMuted,
           lineHeight: 1.15,
           whiteSpace: "nowrap",
@@ -914,7 +930,7 @@ const MiniStat = ({ label, value }) => {
 
       <Typography
         sx={{
-          fontSize: 18,
+          fontSize: 15,
           fontWeight: 700,
           color: COLORS.blue,
           lineHeight: 1.1,
@@ -996,7 +1012,7 @@ const CandidateCard = () => {
       >
         <Typography
           sx={{
-            fontSize: 14,
+            fontSize: 12,
             fontWeight: 600,
             color: COLORS.textSecondary,
             whiteSpace: "nowrap",
@@ -1010,7 +1026,7 @@ const CandidateCard = () => {
 
         <Typography
           sx={{
-            fontSize: 40,
+            fontSize: 30,
             fontWeight: 800,
             color: COLORS.text,
             lineHeight: 0.95,
@@ -1051,7 +1067,7 @@ const CandidateCard = () => {
 // CARD HEADER
 // ============================================================
 
-const CardHeader = ({ title, toggle, onToggle }) => {
+const CardHeader = ({ title, toggle, onToggle, onExpand }) => {
   return (
     <Box
       onClick={(event) => event.stopPropagation()}
@@ -1066,7 +1082,7 @@ const CardHeader = ({ title, toggle, onToggle }) => {
     >
       <Typography
         sx={{
-          fontSize: 15.5,
+          fontSize: 13,
           fontWeight: 700,
           color: COLORS.text,
           minWidth: 0,
@@ -1094,9 +1110,10 @@ const CardHeader = ({ title, toggle, onToggle }) => {
 
         <IconButton
           size="small"
-          sx={{ width: 26, height: 26, flexShrink: 0 }}
+          onClick={() => onExpand?.()}
+          sx={{ width: 24, height: 24, flexShrink: 0 }}
         >
-          <Typography sx={{ fontSize: 15, color: COLORS.textMuted }}>
+          <Typography sx={{ fontSize: 13, color: COLORS.textMuted }}>
             ⤢
           </Typography>
         </IconButton>
@@ -1154,7 +1171,12 @@ const niceTicks = (max) => {
 // AXIS
 // ============================================================
 
-const AxisRow = ({ max, labelWidth = 110, valueWidth = 30 }) => {
+const AxisRow = ({
+  max,
+  labelWidth = 110,
+  valueWidth = 30,
+  fontSize = 8.5,
+}) => {
   const ticks = niceTicks(max);
 
   return (
@@ -1170,7 +1192,7 @@ const AxisRow = ({ max, labelWidth = 110, valueWidth = 30 }) => {
       {ticks.map((tick, index) => (
         <Typography
           key={index}
-          sx={{ fontSize: 10, color: COLORS.textMuted }}
+          sx={{ fontSize, color: COLORS.textMuted }}
         >
           {tick}
         </Typography>
@@ -1265,7 +1287,7 @@ const SubFunctionBars = ({ data }) => {
                     width: labelWidth,
                     flexShrink: 0,
                     textAlign: "right",
-                    fontSize: 12,
+                    fontSize: 10,
                     color: COLORS.textSecondary,
                     whiteSpace: "nowrap",
                     overflow: "hidden",
@@ -1302,7 +1324,7 @@ const SubFunctionBars = ({ data }) => {
                       left: `calc(${pct}% + 10px)`,
                       top: "50%",
                       transform: "translateY(-50%)",
-                      fontSize: 13,
+                      fontSize: 11,
                       fontWeight: 800,
                       color: COLORS.text,
                       whiteSpace: "nowrap",
@@ -1328,7 +1350,7 @@ const SubFunctionBars = ({ data }) => {
 // HORIZONTAL BARS (Experience + Offer cards)
 // ============================================================
 
-const HorizontalBars = ({ data, maxValue }) => {
+const HorizontalBars = ({ data, maxValue, large = false }) => {
   const tooltip = useChartTooltip();
 
   const max =
@@ -1336,12 +1358,14 @@ const HorizontalBars = ({ data, maxValue }) => {
 
   const totalValue = data.reduce((t, i) => t + (Number(i.value) || 0), 0);
 
-  const labelWidth = 110;
-  const valueWidth = 30;
+  const labelWidth = large ? 150 : 110;
+  const valueWidth = large ? 40 : 30;
 
   return (
     <Box>
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2.2 }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", gap: large ? 3 : 2.2 }}
+      >
         {data.map((item) => (
           <Box
             key={item.label}
@@ -1370,7 +1394,7 @@ const HorizontalBars = ({ data, maxValue }) => {
                 width: labelWidth,
                 flexShrink: 0,
                 textAlign: "right",
-                fontSize: 12,
+                fontSize: large ? 13 : 10,
                 color: COLORS.textSecondary,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -1384,7 +1408,7 @@ const HorizontalBars = ({ data, maxValue }) => {
               sx={{
                 flex: 1,
                 minWidth: 0,
-                height: 18,
+                height: large ? 26 : 18,
                 background: "#F1F5F9",
                 borderRadius: "5px",
                 overflow: "hidden",
@@ -1405,7 +1429,7 @@ const HorizontalBars = ({ data, maxValue }) => {
               sx={{
                 width: valueWidth,
                 flexShrink: 0,
-                fontSize: 12.5,
+                fontSize: large ? 14 : 10.5,
                 fontWeight: 700,
                 color: COLORS.text,
               }}
@@ -1416,7 +1440,484 @@ const HorizontalBars = ({ data, maxValue }) => {
         ))}
       </Box>
 
-      <AxisRow max={max} labelWidth={labelWidth} valueWidth={valueWidth} />
+      <AxisRow
+        max={max}
+        labelWidth={labelWidth}
+        valueWidth={valueWidth}
+        fontSize={large ? 11 : 8.5}
+      />
+
+      {tooltip.node}
+    </Box>
+  );
+};
+
+// ============================================================
+// EXPAND DIALOG (opened from the ⤢ button on every card)
+// ============================================================
+
+const ExpandDialog = ({
+  open = true,
+  onClose,
+  title,
+  controls,
+  children,
+  maxWidth = "lg",
+}) => {
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth={maxWidth}
+      PaperProps={{
+        sx: {
+          fontFamily: (theme) => theme.typography.fontFamily,
+          "& .MuiBox-root, & span, & button": { fontFamily: "inherit" },
+          borderRadius: "18px",
+          overflow: "hidden",
+          boxShadow: "0 24px 60px rgba(15,23,42,0.24)",
+        },
+      }}
+    >
+      <Box
+        sx={{
+          px: 3,
+          py: 1.75,
+          borderBottom: `1px solid ${COLORS.border}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 2,
+        }}
+      >
+        <Typography
+          sx={{ fontSize: 17, fontWeight: 700, color: COLORS.text }}
+        >
+          {title}
+        </Typography>
+
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
+          {controls}
+
+          <IconButton
+            onClick={onClose}
+            sx={{
+              width: 34,
+              height: 34,
+              border: `1px solid ${COLORS.border}`,
+              background: "#fff",
+            }}
+          >
+            <CloseIcon sx={{ fontSize: 18, color: COLORS.textSecondary }} />
+          </IconButton>
+        </Box>
+      </Box>
+
+      <Box sx={{ px: 3, py: 2.5, maxHeight: "78vh", overflowY: "auto" }}>
+        {children}
+      </Box>
+    </Dialog>
+  );
+};
+
+// ============================================================
+// EXPANDED: INTERVIEW LINES (one card per status)
+// ============================================================
+
+const ExpandedInterviewLines = ({ data, labels = [], loading = false }) => {
+  const tooltip = useChartTooltip();
+
+  const width = 200;
+  const height = 60;
+  const pad = 6;
+
+  const maxValue = Math.max(
+    ...data.flatMap((item) =>
+      Array.isArray(item.line) && item.line.length > 0 ? item.line : [0]
+    ),
+    1
+  );
+
+  const buildPoints = (values) => {
+    const safe = Array.isArray(values) && values.length >= 2 ? values : [0, 0];
+
+    return safe.map((value, index) => ({
+      x: pad + (index / (safe.length - 1)) * (width - pad * 2),
+      y:
+        height -
+        pad -
+        (Number(value) / maxValue) * (height - pad * 2),
+    }));
+  };
+
+  return (
+    <Box>
+      {data.map((item) => {
+        const points = buildPoints(item.line);
+
+        const linePath = points
+          .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+          .join(" ");
+
+        const areaPath = `${linePath} L ${points[points.length - 1].x} ${
+          height - pad
+        } L ${points[0].x} ${height - pad} Z`;
+
+        return (
+          <Box
+            key={item.label}
+            {...tooltip.bind(
+              item.label,
+              (item.line ?? []).map((v, i) => ({
+                label: labels[i] ?? `P${i + 1}`,
+                value: v,
+                color: item.color,
+              })),
+              item.value
+            )}
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "1fr 100px 1fr",
+              alignItems: "center",
+              px: 3,
+              py: 2,
+              mb: 1.5,
+              borderRadius: "12px",
+              border: `1px solid ${item.color}44`,
+              background: `${item.color}0D`,
+            }}
+          >
+            <Typography sx={{ fontSize: 14, color: COLORS.textSecondary }}>
+              {item.label}
+            </Typography>
+
+            <Typography
+              sx={{
+                fontSize: 20,
+                fontWeight: 700,
+                color: COLORS.text,
+                textAlign: "center",
+              }}
+            >
+              {loading ? "..." : item.value}
+            </Typography>
+
+            <Box sx={{ justifySelf: "end" }}>
+              <svg
+                width={width}
+                height={height}
+                viewBox={`0 0 ${width} ${height}`}
+                style={{ display: "block", overflow: "visible" }}
+              >
+                <path d={areaPath} fill={item.color} opacity={0.16} />
+
+                <path
+                  d={linePath}
+                  fill="none"
+                  stroke={item.color}
+                  strokeWidth="2"
+                  strokeLinejoin="round"
+                />
+
+                {points.map((p, i) => (
+                  <circle
+                    key={i}
+                    cx={p.x}
+                    cy={p.y}
+                    r={i === 0 || i === points.length - 1 ? 3.5 : 2}
+                    fill={item.color}
+                  />
+                ))}
+              </svg>
+            </Box>
+          </Box>
+        );
+      })}
+
+      {tooltip.node}
+    </Box>
+  );
+};
+
+// ============================================================
+// EXPANDED: INTERVIEW BARS (grouped by period)
+// ============================================================
+
+const ExpandedInterviewBars = ({ data, labels = [], loading = false }) => {
+  const tooltip = useChartTooltip();
+
+  const periodCount = Math.max(
+    ...data.map((item) => (Array.isArray(item.line) ? item.line.length : 0)),
+    1
+  );
+
+  const maxValue = Math.max(
+    ...data.flatMap((item) =>
+      Array.isArray(item.line) ? item.line.map((v) => Number(v) || 0) : [0]
+    ),
+    1
+  );
+
+  const chartHeight = 360;
+
+  return (
+    <Box>
+      <Box
+        sx={{
+          position: "relative",
+          height: chartHeight,
+          borderBottom: `1px solid ${COLORS.border}`,
+        }}
+      >
+        {[0, 1, 2, 3].map((i) => (
+          <Box
+            key={i}
+            sx={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: `${i * 25}%`,
+              borderTop: `1px solid ${COLORS.border}`,
+            }}
+          />
+        ))}
+
+        <Box sx={{ position: "relative", height: "100%", display: "flex" }}>
+          {Array.from({ length: periodCount }, (_, index) => (
+            <Box
+              key={index}
+              {...tooltip.bind(
+                labels[index] ?? `P${index + 1}`,
+                data.map((item) => ({
+                  label: item.label,
+                  value: Array.isArray(item.line) ? item.line[index] ?? 0 : 0,
+                  color: item.color,
+                }))
+              )}
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                height: "100%",
+                display: "flex",
+                alignItems: "flex-end",
+                justifyContent: "center",
+                gap: "6px",
+                transition: "background .12s ease",
+                "&:hover": { background: "#F5F7FC" },
+              }}
+            >
+              {data.map((item) => {
+                const value = Number(item.line?.[index]) || 0;
+
+                return (
+                  <Box
+                    key={item.label}
+                    sx={{
+                      width: 20,
+                      height: loading
+                        ? 4
+                        : value > 0
+                          ? `${(value / maxValue) * 100}%`
+                          : 0,
+                      background: item.color,
+                      borderRadius: "5px 5px 0 0",
+                      transition: "height .25s ease",
+                    }}
+                  />
+                );
+              })}
+            </Box>
+          ))}
+        </Box>
+      </Box>
+
+      <Box sx={{ display: "flex", mt: 1 }}>
+        {Array.from({ length: periodCount }, (_, index) => (
+          <Typography
+            key={index}
+            sx={{
+              flex: 1,
+              textAlign: "center",
+              fontSize: 12,
+              color: COLORS.textSecondary,
+            }}
+          >
+            {labels[index] ?? `P${index + 1}`}
+          </Typography>
+        ))}
+      </Box>
+
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          columnGap: 2.5,
+          rowGap: 0.8,
+          mt: 2,
+        }}
+      >
+        {data.map((item) => (
+          <Box
+            key={item.label}
+            sx={{ display: "flex", alignItems: "center", gap: 0.7 }}
+          >
+            <Box
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: item.color,
+              }}
+            />
+            <Typography sx={{ fontSize: 12.5, color: item.color }}>
+              {item.label}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+
+      {tooltip.node}
+    </Box>
+  );
+};
+
+// ============================================================
+// EXPANDED: DONUT (big ring + legend on the right)
+// ============================================================
+
+const ExpandedDonut = ({ data, total }) => {
+  const tooltip = useChartTooltip();
+
+  const size = 280;
+  const stroke = 56;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const gap = 3;
+
+  const pctSum = data.reduce((t, i) => t + i.pct, 0) || 1;
+
+  let offset = 0;
+
+  const segments = data.map((item) => {
+    const full = (item.pct / pctSum) * circumference;
+    const length = Math.max(0, full - gap);
+    const start = offset + gap / 2;
+
+    offset += full;
+
+    return { item, length, start };
+  });
+
+  const tipFor = (item) =>
+    tooltip.bind(
+      item.label,
+      [
+        { label: "Candidates", value: item.value, color: item.color },
+        { label: "Share", value: `${item.pct}%` },
+      ],
+      total
+    );
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: 6,
+        py: 1,
+      }}
+    >
+      <Box sx={{ position: "relative", width: size, height: size }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <g transform={`rotate(-90 ${size / 2} ${size / 2})`}>
+            {segments.map(({ item, length, start }) => (
+              <circle
+                key={item.label}
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                fill="none"
+                stroke={item.color}
+                strokeWidth={stroke}
+                strokeDasharray={`${length} ${circumference - length}`}
+                strokeDashoffset={-start}
+                style={{ cursor: "pointer" }}
+                {...tipFor(item)}
+              />
+            ))}
+          </g>
+        </svg>
+
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: "none",
+          }}
+        >
+          <Typography sx={{ fontSize: 34, fontWeight: 800, lineHeight: 1 }}>
+            {total}
+          </Typography>
+          <Typography
+            sx={{ fontSize: 13, color: COLORS.textSecondary, mt: 0.6 }}
+          >
+            total
+          </Typography>
+        </Box>
+      </Box>
+
+      <Box sx={{ flex: 1, minWidth: 260 }}>
+        {data.map((item) => (
+          <Box
+            key={item.label}
+            {...tipFor(item)}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              py: 1.3,
+              gap: 1.2,
+            }}
+          >
+            <Box
+              sx={{
+                width: 12,
+                height: 12,
+                borderRadius: "3px",
+                background: item.color,
+                flexShrink: 0,
+              }}
+            />
+
+            <Typography
+              sx={{ fontSize: 15, color: COLORS.textSecondary, flex: 1 }}
+            >
+              {item.label}
+            </Typography>
+
+            <Typography sx={{ fontSize: 16, fontWeight: 700 }}>
+              {item.value}
+            </Typography>
+
+            <Typography
+              sx={{
+                fontSize: 12.5,
+                color: COLORS.textMuted,
+                minWidth: 44,
+                textAlign: "right",
+              }}
+            >
+              ({item.pct}%)
+            </Typography>
+          </Box>
+        ))}
+      </Box>
 
       {tooltip.node}
     </Box>
@@ -1425,65 +1926,61 @@ const HorizontalBars = ({ data, maxValue }) => {
 
 // ============================================================
 // INTERVIEW LINE CHART
+// Compact pill rows: label | count | small smooth trend graph.
 // ============================================================
+
+// smooth cubic path through points (no overshoot below the baseline)
+const buildSmoothPath = (points) =>
+  points.reduce((acc, point, index, arr) => {
+    if (index === 0) return `M ${point.x} ${point.y}`;
+
+    const prev = arr[index - 1];
+    const midX = (prev.x + point.x) / 2;
+
+    return `${acc} C ${midX} ${prev.y}, ${midX} ${point.y}, ${point.x} ${point.y}`;
+  }, "");
 
 const InterviewLineChart = ({ data, labels = [], loading = false }) => {
   const tooltip = useChartTooltip();
 
-  const width = 120;
-  const height = 34;
+  const width = 112;
+  const height = 22;
+  const pad = 3;
+  const baseY = height - pad;
 
-  const allValues = data.flatMap((item) =>
-    Array.isArray(item.line) && item.line.length > 0 ? item.line : [0]
-  );
+  // each row is scaled on its own so small counts still show a shape
+  const buildPoints = (values) => {
+    const list = Array.isArray(values) ? values : [];
+    const first = Number(list[0]) || 0;
 
-  const maxValue = Math.max(...allValues, 1);
+    // a single bucket (e.g. "All Time") can't draw a trend -> flat line
+    const safe = list.length >= 2 ? list : [first, first];
 
-  const createPoints = (values) => {
-    const safeValues =
-      Array.isArray(values) && values.length >= 2 ? values : [0, 0];
+    const rowMax = Math.max(...safe.map((v) => Number(v) || 0), 1);
 
-    return safeValues.map((value, index) => {
-      const x = (index / (safeValues.length - 1)) * width;
-
-      const y = height - (Number(value) / maxValue) * (height - 6) - 3;
-
-      return { x, y };
-    });
+    return safe.map((value, index) => ({
+      x: pad + (index / (safe.length - 1)) * (width - pad * 2),
+      y: baseY - ((Number(value) || 0) / rowMax) * (height - pad * 2),
+    }));
   };
 
   return (
-    <Box sx={{ width: "100%", display: "flex", flexDirection: "column" }}>
-      {data.map((item, rowIndex) => {
+    <Box
+      sx={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        gap: 0.6,
+      }}
+    >
+      {data.map((item) => {
+        const points = buildPoints(item.line);
+
         const hasTrend = Array.isArray(item.line) && item.line.length > 1;
 
-        const points = hasTrend ? createPoints(item.line) : [];
+        const linePath = buildSmoothPath(points);
 
-        const linePath = hasTrend
-          ? points.reduce((result, point, index) => {
-              if (index === 0) {
-                return `M ${point.x} ${point.y}`;
-              }
-
-              const previous = points[index - 1];
-
-              const middleX = (previous.x + point.x) / 2;
-
-              return `${result} C ${middleX} ${previous.y}, ${middleX} ${point.y}, ${point.x} ${point.y}`;
-            }, "")
-          : "";
-
-        const areaPath =
-          hasTrend && points.length > 0
-            ? `${linePath} L ${points[points.length - 1].x} ${height} L ${
-                points[0].x
-              } ${height} Z`
-            : "";
-
-        const barPct =
-          maxValue > 0
-            ? Math.max(0, Math.min(100, (Number(item.value) / maxValue) * 100))
-            : 0;
+        const areaPath = `${linePath} L ${points[points.length - 1].x} ${baseY} L ${points[0].x} ${baseY} Z`;
 
         return (
           <Box
@@ -1501,118 +1998,70 @@ const InterviewLineChart = ({ data, labels = [], loading = false }) => {
             )}
             sx={{
               display: "grid",
-              gridTemplateColumns: "108px 28px minmax(80px, 1fr)",
+              gridTemplateColumns: "minmax(64px, 1fr) 30px 112px",
               alignItems: "center",
-              gap: 0.9,
-              py: 0.7,
-              borderBottom:
-                rowIndex < data.length - 1
-                  ? `1px solid ${COLORS.border}`
-                  : "none",
+              columnGap: 1,
+              pl: 1.4,
+              pr: 1,
+              py: 0.2,
+              borderRadius: "999px",
+              border: `1px solid ${item.color}55`,
+              background: `${item.color}0D`,
             }}
           >
-            <Box
+            <Typography
               sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: "999px",
-                px: 1.4,
-                py: 0.4,
-                width: "fit-content",
-                background: "#fff",
+                fontSize: 10.5,
+                color: COLORS.textSecondary,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
               }}
             >
-              <Typography
-                sx={{
-                  fontSize: 12,
-                  color: COLORS.textSecondary,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {item.label}
-              </Typography>
-            </Box>
+              {item.label}
+            </Typography>
 
             <Typography
               sx={{
-                fontSize: 14.5,
-                fontWeight: 800,
+                fontSize: 13,
+                fontWeight: 700,
                 color: COLORS.text,
                 textAlign: "center",
+                lineHeight: 1.2,
               }}
             >
               {loading ? "..." : item.value}
             </Typography>
 
-            <Box
-              sx={{
-                height,
-                minWidth: 0,
-                display: "flex",
-                alignItems: "center",
-              }}
+            <svg
+              width={width}
+              height={height}
+              viewBox={`0 0 ${width} ${height}`}
+              style={{ display: "block", overflow: "visible" }}
             >
-              {hasTrend ? (
-                <svg
-                  viewBox={`0 0 ${width} ${height}`}
-                  width="100%"
-                  height={height}
-                  preserveAspectRatio="none"
-                  style={{ display: "block", overflow: "visible" }}
-                >
-                  {areaPath && (
-                    <path
-                      d={areaPath}
-                      fill={item.color}
-                      opacity={0.14}
-                      stroke="none"
-                    />
-                  )}
-
-                  <path
-                    d={linePath}
-                    fill="none"
-                    stroke={item.color}
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-
-                  {points.map((point, index) => (
-                    <circle
-                      key={index}
-                      cx={point.x}
-                      cy={point.y}
-                      r="3.5"
-                      fill={item.color}
-                    />
-                  ))}
-                </svg>
-              ) : (
-                <Box
-                  sx={{
-                    width: "100%",
-                    height: 8,
-                    borderRadius: "5px",
-                    background: "#F1F5F9",
-                    overflow: "hidden",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: `${barPct}%`,
-                      height: "100%",
-                      background: item.color,
-                      borderRadius: "5px",
-                      minWidth: item.value > 0 ? 4 : 0,
-                      transition: "width .25s ease",
-                    }}
-                  />
-                </Box>
+              {hasTrend && (
+                <path d={areaPath} fill={item.color} opacity={0.16} />
               )}
-            </Box>
+
+              <path
+                d={linePath}
+                fill="none"
+                stroke={item.color}
+                strokeWidth="1.8"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+
+              {points.map((p, i) => (
+                <circle
+                  key={i}
+                  cx={p.x}
+                  cy={p.y}
+                  r={i === 0 || i === points.length - 1 ? 2.8 : 2.2}
+                  fill={item.color}
+                />
+              ))}
+            </svg>
           </Box>
         );
       })}
@@ -1721,7 +2170,7 @@ const InterviewBarChart = ({ data, labels = [], loading = false }) => {
             sx={{
               width: 40,
               textAlign: "center",
-              fontSize: 11.5,
+              fontSize: 10,
               color: COLORS.textSecondary,
             }}
           >
@@ -1744,7 +2193,7 @@ const InterviewBarChart = ({ data, labels = [], loading = false }) => {
           <Typography
             key={item.label}
             sx={{
-              fontSize: 11.5,
+              fontSize: 10,
               fontWeight: 600,
               color: item.color,
               whiteSpace: "nowrap",
@@ -1862,11 +2311,11 @@ const Donut = ({ data, total }) => {
             justifyContent: "center",
           }}
         >
-          <Typography sx={{ fontSize: 19, fontWeight: 800, lineHeight: 1 }}>
+          <Typography sx={{ fontSize: 16, fontWeight: 800, lineHeight: 1 }}>
             {total}
           </Typography>
 
-          <Typography sx={{ fontSize: 9, color: COLORS.textMuted, mt: 0.3 }}>
+          <Typography sx={{ fontSize: 8, color: COLORS.textMuted, mt: 0.3 }}>
             total
           </Typography>
         </Box>
@@ -1900,9 +2349,9 @@ const Donut = ({ data, total }) => {
           >
             <Box
               sx={{
-                width: 8,
-                height: 8,
-                minWidth: 8,
+                width: 7,
+                height: 7,
+                minWidth: 7,
                 borderRadius: "50%",
                 background: item.color,
               }}
@@ -1910,20 +2359,20 @@ const Donut = ({ data, total }) => {
 
             <Typography
               sx={{
-                fontSize: 11,
+                fontSize: 9.5,
                 color: COLORS.textSecondary,
-                width: 70,
+                width: 64,
                 flexShrink: 0,
               }}
             >
               {item.label}
             </Typography>
 
-            <Typography sx={{ fontSize: 11.5, fontWeight: 700 }}>
+            <Typography sx={{ fontSize: 10, fontWeight: 700 }}>
               {item.value}
             </Typography>
 
-            <Typography sx={{ fontSize: 10, color: COLORS.textMuted }}>
+            <Typography sx={{ fontSize: 8.5, color: COLORS.textMuted }}>
               ({item.pct}%)
             </Typography>
           </Box>
@@ -1953,7 +2402,7 @@ const CurrentPipelineChart = ({ data, loading = false, onStageClick }) => {
     <Box sx={{ minWidth: 0 }}>
       <Typography
         sx={{
-          fontSize: 10.5,
+          fontSize: 9,
           fontWeight: 700,
           color: COLORS.textMuted,
           letterSpacing: 0.5,
@@ -1979,7 +2428,7 @@ const CurrentPipelineChart = ({ data, loading = false, onStageClick }) => {
             <Typography
               key={index}
               sx={{
-                fontSize: 9,
+                fontSize: 8,
                 color: COLORS.textMuted,
                 textAlign: "right",
                 lineHeight: 1,
@@ -2082,10 +2531,10 @@ const CurrentPipelineChart = ({ data, loading = false, onStageClick }) => {
                     <Typography
                       sx={{
                         position: "absolute",
-                        top: -19,
+                        top: -17,
                         left: "50%",
                         transform: "translateX(-50%)",
-                        fontSize: 11,
+                        fontSize: 9.5,
                         fontWeight: 700,
                         whiteSpace: "nowrap",
                       }}
@@ -2097,7 +2546,7 @@ const CurrentPipelineChart = ({ data, loading = false, onStageClick }) => {
 
                 <Typography
                   sx={{
-                    fontSize: 9,
+                    fontSize: 8,
                     color: COLORS.textMuted,
                     mt: 1,
                     textAlign: "center",
@@ -2168,7 +2617,7 @@ const CumulativePipelineChart = ({ data, loading = false, onStageClick }) => {
     <Box sx={{ minWidth: 0, width: "100%", overflow: "hidden" }}>
       <Typography
         sx={{
-          fontSize: 10.5,
+          fontSize: 9,
           fontWeight: 700,
           color: COLORS.textMuted,
           letterSpacing: 0.5,
@@ -2194,7 +2643,7 @@ const CumulativePipelineChart = ({ data, loading = false, onStageClick }) => {
               alignItems: "center",
               justifyContent: "center",
               color: COLORS.textMuted,
-              fontSize: 13,
+              fontSize: 11,
             }}
           >
             Loading pipeline...
@@ -2256,7 +2705,7 @@ const CumulativePipelineChart = ({ data, loading = false, onStageClick }) => {
                     y={y + stageHeight / 2 + 4}
                     textAnchor="end"
                     fill="#64748B"
-                    fontSize="12"
+                    fontSize="10"
                     fontWeight="500"
                   >
                     {value}
@@ -2267,7 +2716,7 @@ const CumulativePipelineChart = ({ data, loading = false, onStageClick }) => {
                     y={y + stageHeight / 2 + 4}
                     textAnchor="start"
                     fill="#111827"
-                    fontSize="12"
+                    fontSize="10"
                     fontWeight="700"
                   >
                     {item.label === "New Applications"
@@ -2285,10 +2734,10 @@ const CumulativePipelineChart = ({ data, loading = false, onStageClick }) => {
         sx={{
           mt: 1.5,
           px: 1.5,
-          py: 1,
+          py: 0.8,
           border: "1px solid #FECACA",
           background: "#FFF5F5",
-          borderRadius: "12px",
+          borderRadius: "10px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -2305,8 +2754,8 @@ const CumulativePipelineChart = ({ data, loading = false, onStageClick }) => {
         >
           <Box
             sx={{
-              width: 30,
-              height: 30,
+              width: 26,
+              height: 26,
               borderRadius: "50%",
               background: "#fff",
               border: "1px solid #FECACA",
@@ -2314,7 +2763,7 @@ const CumulativePipelineChart = ({ data, loading = false, onStageClick }) => {
               alignItems: "center",
               justifyContent: "center",
               color: COLORS.closed,
-              fontSize: 16,
+              fontSize: 13,
               flexShrink: 0,
             }}
           >
@@ -2323,7 +2772,7 @@ const CumulativePipelineChart = ({ data, loading = false, onStageClick }) => {
 
           <Typography
             sx={{
-              fontSize: 14,
+              fontSize: 12,
               fontWeight: 700,
               color: COLORS.closed,
               whiteSpace: "nowrap",
@@ -2334,7 +2783,7 @@ const CumulativePipelineChart = ({ data, loading = false, onStageClick }) => {
         </Box>
 
         <Typography
-          sx={{ fontSize: 18, fontWeight: 800, color: COLORS.closed }}
+          sx={{ fontSize: 15, fontWeight: 800, color: COLORS.closed }}
         >
           {loading
             ? "..."
@@ -2592,14 +3041,14 @@ const JobStepper = ({ job }) => {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                width: 64,
+                width: 60,
                 flexShrink: 0,
               }}
             >
               <Box
                 sx={{
-                  width: 28,
-                  height: 28,
+                  width: 24,
+                  height: 24,
                   borderRadius: "50%",
                   boxSizing: "border-box",
                   display: "flex",
@@ -2610,14 +3059,14 @@ const JobStepper = ({ job }) => {
                 }}
               >
                 {done && (
-                  <CheckRoundedIcon sx={{ fontSize: 16, color: "#fff" }} />
+                  <CheckRoundedIcon sx={{ fontSize: 12.5, color: "#fff" }} />
                 )}
               </Box>
 
               <Typography
                 sx={{
                   mt: 0.7,
-                  fontSize: 12,
+                  fontSize: 9,
                   fontWeight: done ? 700 : 500,
                   color: done ? STEP_DONE : COLORS.textMuted,
                   whiteSpace: "nowrap",
@@ -2632,7 +3081,7 @@ const JobStepper = ({ job }) => {
                 sx={{
                   flex: 1,
                   height: 3,
-                  mt: "13px",
+                  mt: "11px",
                   borderRadius: "2px",
                   background: done && nextDone ? STEP_DONE : "#E7ECF4",
                 }}
@@ -2654,7 +3103,7 @@ const StageJobCard = ({ job, onView }) => {
     <Box
       sx={{
         px: 2,
-        py: 1.75,
+        py: 1.5,
         borderRadius: "12px",
         background: "#F8FAFF",
       }}
@@ -2677,8 +3126,8 @@ const StageJobCard = ({ job, onView }) => {
         >
           <Box
             sx={{
-              width: 38,
-              height: 38,
+              width: 34,
+              height: 34,
               borderRadius: "10px",
               background: "#FCE4EC",
               color: "#D81B60",
@@ -2688,14 +3137,14 @@ const StageJobCard = ({ job, onView }) => {
               flexShrink: 0,
             }}
           >
-            <WorkOutlineRoundedIcon sx={{ fontSize: 20 }} />
+            <WorkOutlineRoundedIcon sx={{ fontSize: 16 }} />
           </Box>
 
           <Box sx={{ minWidth: 0 }}>
             <Typography
               sx={{
-                fontSize: 16,
-                fontWeight: 800,
+                fontSize: 12,
+                fontWeight: 700,
                 color: COLORS.text,
                 lineHeight: 1.2,
                 whiteSpace: "nowrap",
@@ -2713,7 +3162,7 @@ const StageJobCard = ({ job, onView }) => {
                 flexWrap: "wrap",
                 gap: 0.8,
                 mt: 0.4,
-                fontSize: 13,
+                fontSize: 9.5,
                 color: COLORS.textMuted,
               }}
             >
@@ -2726,7 +3175,7 @@ const StageJobCard = ({ job, onView }) => {
                     component="span"
                     sx={{ display: "inline-flex", alignItems: "center", gap: 0.4 }}
                   >
-                    <PublicRoundedIcon sx={{ fontSize: 14 }} />
+                    <PublicRoundedIcon sx={{ fontSize: 10.5 }} />
                     {job.job_country}
                   </Box>
                 </>
@@ -2753,12 +3202,12 @@ const StageJobCard = ({ job, onView }) => {
           <Box
             component="span"
             sx={{
-              px: 1.6,
-              py: 0.6,
+              px: 1.4,
+              py: 0.5,
               borderRadius: "999px",
               background: "#E3EAF5",
               color: "#5B7299",
-              fontSize: 13,
+              fontSize: 9.5,
               fontWeight: 700,
               whiteSpace: "nowrap",
             }}
@@ -2773,9 +3222,11 @@ const StageJobCard = ({ job, onView }) => {
               borderColor: COLORS.border,
               color: COLORS.blue,
               textTransform: "none",
-              fontWeight: 800,
+              fontWeight: 700,
+              fontSize: 10,
               borderRadius: "999px",
-              px: 3,
+              px: 2.4,
+              py: 0.4,
               background: "#fff",
               "&:hover": {
                 borderColor: COLORS.blue,
@@ -2819,7 +3270,7 @@ const StageCandidateRow = ({ candidate, expanded, onToggle, onView }) => {
           justifyContent: "space-between",
           gap: 2,
           px: 2.25,
-          py: 1.75,
+          py: 1.5,
           cursor: "pointer",
         }}
       >
@@ -2833,13 +3284,13 @@ const StageCandidateRow = ({ candidate, expanded, onToggle, onView }) => {
         >
           <Box
             sx={{
-              width: 54,
-              height: 54,
+              width: 36,
+              height: 36,
               borderRadius: "50%",
               background: avatarColor,
               color: "#fff",
-              fontSize: 18,
-              fontWeight: 800,
+              fontSize: 13,
+              fontWeight: 700,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -2859,13 +3310,13 @@ const StageCandidateRow = ({ candidate, expanded, onToggle, onView }) => {
               }}
             >
               <Typography
-                sx={{ fontSize: 18, fontWeight: 800, color: COLORS.text }}
+                sx={{ fontSize: 13, fontWeight: 700, color: COLORS.text }}
               >
                 {candidate.clin_id}
               </Typography>
 
               <Typography
-                sx={{ fontSize: 15, fontWeight: 800, color: COLORS.blue }}
+                sx={{ fontSize: 11, fontWeight: 700, color: COLORS.blue }}
               >
                 {name}
               </Typography>
@@ -2873,7 +3324,7 @@ const StageCandidateRow = ({ candidate, expanded, onToggle, onView }) => {
 
             <Typography
               sx={{
-                fontSize: 14,
+                fontSize: 10.5,
                 color: COLORS.textSecondary,
                 mt: 0.3,
               }}
@@ -2896,13 +3347,13 @@ const StageCandidateRow = ({ candidate, expanded, onToggle, onView }) => {
           <Box
             component="span"
             sx={{
-              px: 1.6,
-              py: 0.6,
+              px: 1.4,
+              py: 0.5,
               borderRadius: "999px",
               background: "#E8EEFC",
               color: COLORS.blue,
-              fontSize: 13,
-              fontWeight: 800,
+              fontSize: 9.5,
+              fontWeight: 700,
               whiteSpace: "nowrap",
             }}
           >
@@ -2910,10 +3361,12 @@ const StageCandidateRow = ({ candidate, expanded, onToggle, onView }) => {
           </Box>
 
           {expanded ? (
-            <KeyboardArrowUpRoundedIcon sx={{ color: COLORS.textSecondary }} />
+            <KeyboardArrowUpRoundedIcon
+              sx={{ color: COLORS.textSecondary, fontSize: 17.5 }}
+            />
           ) : (
             <KeyboardArrowDownRoundedIcon
-              sx={{ color: COLORS.textSecondary }}
+              sx={{ color: COLORS.textSecondary, fontSize: 17.5 }}
             />
           )}
         </Box>
@@ -2928,10 +3381,10 @@ const StageCandidateRow = ({ candidate, expanded, onToggle, onView }) => {
               flexWrap: "wrap",
               gap: 2.5,
               px: 2.25,
-              py: 1.1,
+              py: 1,
               borderTop: `1px solid ${COLORS.border}`,
               borderBottom: `1px solid ${COLORS.border}`,
-              fontSize: 13.5,
+              fontSize: 10,
             }}
           >
             {candidate.email && (
@@ -2943,7 +3396,7 @@ const StageCandidateRow = ({ candidate, expanded, onToggle, onView }) => {
                   color: COLORS.blue,
                 }}
               >
-                <MailOutlineRoundedIcon sx={{ fontSize: 16 }} />
+                <MailOutlineRoundedIcon sx={{ fontSize: 12.5 }} />
                 {candidate.email}
               </Box>
             )}
@@ -2957,14 +3410,14 @@ const StageCandidateRow = ({ candidate, expanded, onToggle, onView }) => {
                   color: "#0E9F6E",
                 }}
               >
-                <PhoneRoundedIcon sx={{ fontSize: 16 }} />
+                <PhoneRoundedIcon sx={{ fontSize: 12.5 }} />
                 {candidate.phone_number}
               </Box>
             )}
 
             {candidate.pii_masked && (
               <VisibilityOffOutlinedIcon
-                sx={{ fontSize: 16, color: COLORS.textMuted }}
+                sx={{ fontSize: 12.5, color: COLORS.textMuted }}
               />
             )}
           </Box>
@@ -2989,6 +3442,7 @@ const StageDetailsDialog = ({
   orgId,
   countsType,
   subFunctionValue,
+  periodConfig,
   onClose,
   navigate,
 }) => {
@@ -3008,6 +3462,8 @@ const StageDetailsDialog = ({
       country: "all_locations",
       filterBySubfunction:
         subFunctionValue === "all" ? undefined : subFunctionValue,
+      periodCount: periodConfig.periodCount,
+      allTime: periodConfig.allTime,
       page,
       pageSize,
     },
@@ -3066,6 +3522,8 @@ const StageDetailsDialog = ({
       maxWidth="lg"
       PaperProps={{
         sx: {
+          fontFamily: (theme) => theme.typography.fontFamily,
+          "& .MuiBox-root, & span, & button": { fontFamily: "inherit" },
           borderRadius: "20px",
           height: "min(92vh, 860px)",
           display: "flex",
@@ -3079,7 +3537,7 @@ const StageDetailsDialog = ({
       <Box
         sx={{
           px: 3,
-          py: 2,
+          py: 1.75,
           borderBottom: `1px solid ${COLORS.border}`,
           display: "flex",
           alignItems: "flex-start",
@@ -3089,15 +3547,15 @@ const StageDetailsDialog = ({
         }}
       >
         <Box sx={{ minWidth: 0 }}>
-          <Typography sx={{ fontSize: 14, color: COLORS.textSecondary }}>
+          <Typography sx={{ fontSize: 10.5, color: COLORS.textSecondary }}>
             Jobs: All Jobs | Country: All Countries | Sub-function:{" "}
-            {subFunctionLabel} | Period: All Time
+            {subFunctionLabel} | Period: {periodConfig.label}
           </Typography>
 
           <Typography
             sx={{
-              fontSize: 22,
-              fontWeight: 800,
+              fontSize: 16,
+              fontWeight: 700,
               color: COLORS.blue,
               mt: 0.4,
             }}
@@ -3106,7 +3564,7 @@ const StageDetailsDialog = ({
           </Typography>
 
           <Typography
-            sx={{ fontSize: 14, color: COLORS.textSecondary, mt: 0.4 }}
+            sx={{ fontSize: 10.5, color: COLORS.textSecondary, mt: 0.4 }}
           >
             Candidates {details?.unique_candidates_count ?? 0} | Jobs{" "}
             {details?.job_details_count ?? 0}
@@ -3116,14 +3574,14 @@ const StageDetailsDialog = ({
         <IconButton
           onClick={onClose}
           sx={{
-            width: 44,
-            height: 44,
+            width: 36,
+            height: 36,
             border: `1px solid ${COLORS.border}`,
             background: "#fff",
             flexShrink: 0,
           }}
         >
-          <CloseIcon sx={{ fontSize: 22, color: COLORS.textSecondary }} />
+          <CloseIcon sx={{ fontSize: 16, color: COLORS.textSecondary }} />
         </IconButton>
       </Box>
 
@@ -3131,7 +3589,7 @@ const StageDetailsDialog = ({
       <Box
         sx={{
           px: 3,
-          py: 2,
+          py: 1.75,
           display: "flex",
           alignItems: "center",
           gap: 1.5,
@@ -3147,16 +3605,18 @@ const StageDetailsDialog = ({
           size="small"
           sx={{
             "& .MuiOutlinedInput-root": {
-              height: 52,
-              borderRadius: "12px",
+              height: 38,
+              borderRadius: "10px",
               background: "#F5F7FB",
-              fontSize: 16,
+              fontSize: 11.5,
             },
           }}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <SearchRoundedIcon sx={{ color: COLORS.textMuted }} />
+                <SearchRoundedIcon
+                  sx={{ color: COLORS.textMuted, fontSize: 17.5 }}
+                />
               </InputAdornment>
             ),
           }}
@@ -3167,11 +3627,16 @@ const StageDetailsDialog = ({
           onChange={(event) => setSort(event.target.value)}
           size="small"
           sx={{
-            minWidth: 195,
-            height: 52,
-            borderRadius: "12px",
+            minWidth: 170,
+            height: 38,
+            borderRadius: "10px",
             background: "#F5F7FB",
-            fontSize: 16,
+            fontSize: 11.5,
+          }}
+          MenuProps={{
+            PaperProps: {
+              sx: { "& .MuiMenuItem-root": { fontSize: 11.5 } },
+            },
           }}
         >
           <MenuItem value="latest">Latest first</MenuItem>
@@ -3192,22 +3657,36 @@ const StageDetailsDialog = ({
         }}
       >
         {isFetching && !details ? (
-          <Box sx={{ py: 10, textAlign: "center", color: COLORS.textSecondary }}>
+          <Box
+            sx={{
+              py: 10,
+              textAlign: "center",
+              color: COLORS.textSecondary,
+              fontSize: 11,
+            }}
+          >
             Loading candidates...
           </Box>
         ) : isError ? (
-          <Box sx={{ py: 10, textAlign: "center", color: COLORS.closed }}>
+          <Box
+            sx={{
+              py: 10,
+              textAlign: "center",
+              color: COLORS.closed,
+              fontSize: 11,
+            }}
+          >
             Could not load candidates. Please try again.
           </Box>
         ) : candidates.length === 0 ? (
           <Box sx={{ py: 10, textAlign: "center" }}>
             <Typography
-              sx={{ fontSize: 15, fontWeight: 700, color: COLORS.text }}
+              sx={{ fontSize: 11.5, fontWeight: 700, color: COLORS.text }}
             >
               No candidates found
             </Typography>
             <Typography
-              sx={{ fontSize: 13, color: COLORS.textSecondary, mt: 0.5 }}
+              sx={{ fontSize: 9.5, color: COLORS.textSecondary, mt: 0.5 }}
             >
               Try a different search term.
             </Typography>
@@ -3235,7 +3714,7 @@ const StageDetailsDialog = ({
       <Box
         sx={{
           px: 3,
-          py: 1.75,
+          py: 1.5,
           borderTop: `1px solid ${COLORS.border}`,
           display: "flex",
           alignItems: "center",
@@ -3249,16 +3728,16 @@ const StageDetailsDialog = ({
             disabled={page <= 1 || isFetching}
             onClick={() => setPage((current) => Math.max(1, current - 1))}
             sx={{
-              width: 44,
-              height: 44,
-              borderRadius: "12px",
+              width: 36,
+              height: 36,
+              borderRadius: "10px",
               border: `1px solid ${COLORS.border}`,
             }}
           >
-            <ChevronLeftRoundedIcon />
+            <ChevronLeftRoundedIcon sx={{ fontSize: 17.5 }} />
           </IconButton>
 
-          <Typography sx={{ fontSize: 15, color: COLORS.textSecondary }}>
+          <Typography sx={{ fontSize: 11, color: COLORS.textSecondary }}>
             Page {page} of {totalPages}
           </Typography>
 
@@ -3268,13 +3747,13 @@ const StageDetailsDialog = ({
               setPage((current) => Math.min(totalPages, current + 1))
             }
             sx={{
-              width: 44,
-              height: 44,
-              borderRadius: "12px",
+              width: 36,
+              height: 36,
+              borderRadius: "10px",
               border: `1px solid ${COLORS.border}`,
             }}
           >
-            <ChevronRightRoundedIcon />
+            <ChevronRightRoundedIcon sx={{ fontSize: 17.5 }} />
           </IconButton>
         </Box>
 
@@ -3284,8 +3763,8 @@ const StageDetailsDialog = ({
             position: "absolute",
             right: 24,
             textTransform: "none",
-            fontWeight: 800,
-            fontSize: 16,
+            fontWeight: 700,
+            fontSize: 11.5,
             color: COLORS.blue,
           }}
         >
@@ -3311,6 +3790,13 @@ const OrganizationOverview = ({ orgId }) => {
 
   const [selectedSubFunction, setSelectedSubFunction] = useState("all");
 
+  // Period filter: "3m" | "6m" | "all"
+  const [period, setPeriod] = useState("all");
+
+  const periodConfig =
+    PERIOD_OPTIONS.find((option) => option.value === period) ??
+    PERIOD_OPTIONS[2];
+
   // Interview chart: line / bar
   const [interviewChartType, setInterviewChartType] = useState("line");
 
@@ -3322,6 +3808,9 @@ const OrganizationOverview = ({ orgId }) => {
   const [experienceType, setExperienceType] = useState("donut");
 
   const [offerType, setOfferType] = useState("current");
+
+  // Expanded card: null | "interviews" | "subfunction" | "pipeline" | "experience" | "offers"
+  const [expandCard, setExpandCard] = useState(null);
 
   const [jobsDialogOpen, setJobsDialogOpen] = useState(false);
 
@@ -3400,11 +3889,11 @@ const OrganizationOverview = ({ orgId }) => {
       {
         organisationId: orgId,
         groupBy: "month",
-        periodCount: 6,
+        periodCount: periodConfig.periodCount,
         status: "all",
         filterBySubfunction: subFunctionParam,
         country: "all",
-        allTime: true,
+        allTime: periodConfig.allTime,
       },
       { skip: !orgId }
     );
@@ -3418,12 +3907,12 @@ const OrganizationOverview = ({ orgId }) => {
       {
         organisationId: orgId,
         groupBy: "month",
-        periodCount: 6,
+        periodCount: periodConfig.periodCount,
         status: "all",
         countsType: "cumulative",
         filterBySubfunction: subFunctionParam,
         country: "all",
-        allTime: true,
+        allTime: periodConfig.allTime,
       },
       { skip: !orgId }
     );
@@ -3437,12 +3926,12 @@ const OrganizationOverview = ({ orgId }) => {
       {
         organisationId: orgId,
         groupBy: "month",
-        periodCount: 6,
+        periodCount: periodConfig.periodCount,
         status: "all",
         countsType: pipelineType,
         filterBySubfunction: subFunctionParam,
         country: "all",
-        allTime: true,
+        allTime: periodConfig.allTime,
       },
       { skip: !orgId }
     );
@@ -3459,12 +3948,12 @@ const OrganizationOverview = ({ orgId }) => {
     {
       organisationId: orgId,
       groupBy: "month",
-      periodCount: 6,
+      periodCount: periodConfig.periodCount,
       status: "all",
       countsType: interviewType,
       filterBySubfunction: subFunctionParam,
       country: "all",
-      allTime: true,
+      allTime: periodConfig.allTime,
     },
     { skip: !orgId }
   );
@@ -3481,12 +3970,12 @@ const OrganizationOverview = ({ orgId }) => {
     {
       organisationId: orgId,
       groupBy: "month",
-      periodCount: 6,
+      periodCount: periodConfig.periodCount,
       status: "all",
       countsType: offerType,
       filterBySubfunction: subFunctionParam,
       country: "all",
-      allTime: true,
+      allTime: periodConfig.allTime,
     },
     { skip: !orgId }
   );
@@ -3817,7 +4306,7 @@ const OrganizationOverview = ({ orgId }) => {
 
         <Box
           sx={{
-            minHeight: 68,
+            minHeight: 58,
             width: "100%",
             background: "#fff",
             border: `1px solid ${COLORS.border}`,
@@ -3836,7 +4325,7 @@ const OrganizationOverview = ({ orgId }) => {
             zIndex: 20,
           }}
         >
-          <Box sx={{ minWidth: 0, flexShrink: 0 }}>
+          {/* <Box sx={{ minWidth: 0, flexShrink: 0 }}>
             <Toggle
               value={userType}
               onChange={setUserType}
@@ -3845,7 +4334,7 @@ const OrganizationOverview = ({ orgId }) => {
                 { value: "current", label: "Current User" },
               ]}
             />
-          </Box>
+          </Box> */}
 
           <Box
             sx={{
@@ -3867,12 +4356,17 @@ const OrganizationOverview = ({ orgId }) => {
               onChange={setSelectedSubFunction}
             />
 
-            <Filter>All Time</Filter>
+            <SubFunctionDropdown
+              value={period}
+              onChange={setPeriod}
+              options={PERIOD_OPTIONS}
+              minWidth={{ xs: 150, sm: 165, md: 175 }}
+            />
 
             <IconButton
               sx={{
-                width: 44,
-                height: 44,
+                width: 36,
+                height: 36,
                 flexShrink: 0,
                 background: "#EFF4FF",
                 color: COLORS.blue,
@@ -3883,7 +4377,7 @@ const OrganizationOverview = ({ orgId }) => {
               }}
             >
               <Typography
-                sx={{ fontSize: 22, lineHeight: 1, fontWeight: 700 }}
+                sx={{ fontSize: 18, lineHeight: 1, fontWeight: 700 }}
               >
                 ↓
               </Typography>
@@ -3981,7 +4475,7 @@ const OrganizationOverview = ({ orgId }) => {
             >
               <Typography
                 sx={{
-                  fontSize: 15.5,
+                  fontSize: 13,
                   fontWeight: 700,
                   color: COLORS.text,
                   lineHeight: 1.15,
@@ -4027,13 +4521,14 @@ const OrganizationOverview = ({ orgId }) => {
 
                 <IconButton
                   size="small"
+                  onClick={() => setExpandCard("interviews")}
                   sx={{
                     width: 22,
                     height: 22,
                     color: COLORS.textMuted,
                   }}
                 >
-                  <Typography sx={{ fontSize: 14 }}>⤢</Typography>
+                  <Typography sx={{ fontSize: 12 }}>⤢</Typography>
                 </IconButton>
               </Box>
             </Box>
@@ -4052,7 +4547,10 @@ const OrganizationOverview = ({ orgId }) => {
           ================================================== */}
 
           <ChartCard onClick={() => openJobsDialog("all")}>
-            <CardHeader title="Candidates by Sub-function" />
+            <CardHeader
+              title="Candidates by Sub-function"
+              onExpand={() => setExpandCard("subfunction")}
+            />
 
             <SubFunctionBars data={DATA.subFunctions} />
           </ChartCard>
@@ -4101,6 +4599,7 @@ const OrganizationOverview = ({ orgId }) => {
                 ],
               }}
               onToggle={setPipelineType}
+              onExpand={() => setExpandCard("pipeline")}
             />
 
             <PipelineChart
@@ -4126,6 +4625,7 @@ const OrganizationOverview = ({ orgId }) => {
                 ],
               }}
               onToggle={setExperienceType}
+              onExpand={() => setExpandCard("experience")}
             />
 
             {experienceType === "donut" ? (
@@ -4150,6 +4650,7 @@ const OrganizationOverview = ({ orgId }) => {
                 ],
               }}
               onToggle={setOfferType}
+              onExpand={() => setExpandCard("offers")}
             />
 
             <HorizontalBars
@@ -4163,7 +4664,7 @@ const OrganizationOverview = ({ orgId }) => {
             {offerLoading && (
               <Typography
                 sx={{
-                  fontSize: 10,
+                  fontSize: 9,
                   color: COLORS.textMuted,
                   mt: 0.5,
                   textAlign: "right",
@@ -4186,6 +4687,8 @@ const OrganizationOverview = ({ orgId }) => {
           maxWidth="lg"
           PaperProps={{
             sx: {
+              fontFamily: (theme) => theme.typography.fontFamily,
+              "& .MuiBox-root, & span, & button": { fontFamily: "inherit" },
               borderRadius: "22px",
               overflow: "hidden",
               boxShadow: "0 24px 60px rgba(15,23,42,0.24)",
@@ -4195,7 +4698,7 @@ const OrganizationOverview = ({ orgId }) => {
           <DialogTitle
             sx={{
               px: 2.5,
-              py: 2,
+              py: 1.75,
               borderBottom: `1px solid ${COLORS.border}`,
               display: "flex",
               alignItems: "flex-start",
@@ -4206,7 +4709,7 @@ const OrganizationOverview = ({ orgId }) => {
             <Box>
               <Typography
                 sx={{
-                  fontSize: 20,
+                  fontSize: 17,
                   fontWeight: 800,
                   color: COLORS.blue,
                   lineHeight: 1.1,
@@ -4216,7 +4719,7 @@ const OrganizationOverview = ({ orgId }) => {
               </Typography>
               <Typography
                 sx={{
-                  fontSize: 13,
+                  fontSize: 11,
                   color: COLORS.textSecondary,
                   mt: 0.5,
                 }}
@@ -4228,13 +4731,13 @@ const OrganizationOverview = ({ orgId }) => {
             <IconButton
               onClick={() => setJobsDialogOpen(false)}
               sx={{
-                width: 36,
-                height: 36,
+                width: 32,
+                height: 32,
                 border: `1px solid ${COLORS.border}`,
                 background: "#fff",
               }}
             >
-              <CloseIcon sx={{ fontSize: 20, color: COLORS.textSecondary }} />
+              <CloseIcon sx={{ fontSize: 18, color: COLORS.textSecondary }} />
             </IconButton>
           </DialogTitle>
 
@@ -4276,11 +4779,11 @@ const OrganizationOverview = ({ orgId }) => {
                       sx={{
                         border: 0,
                         outline: 0,
-                        minHeight: 32,
-                        px: 1.8,
+                        minHeight: 28,
+                        px: 1.6,
                         borderRadius: "999px",
                         cursor: "pointer",
-                        fontSize: 12,
+                        fontSize: 10.5,
                         fontWeight: 700,
                         color: active ? "#fff" : COLORS.textSecondary,
                         background: active ? COLORS.blue : "transparent",
@@ -4310,7 +4813,8 @@ const OrganizationOverview = ({ orgId }) => {
                   borderRadius: "12px",
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "12px",
-                    height: 46,
+                    height: 40,
+                    fontSize: 12.5,
                     background: "#F8FAFC",
                   },
                 }}
@@ -4318,7 +4822,7 @@ const OrganizationOverview = ({ orgId }) => {
                   startAdornment: (
                     <InputAdornment position="start">
                       <SearchRoundedIcon
-                        sx={{ fontSize: 18, color: COLORS.textMuted }}
+                        sx={{ fontSize: 17, color: COLORS.textMuted }}
                       />
                     </InputAdornment>
                   ),
@@ -4333,6 +4837,7 @@ const OrganizationOverview = ({ orgId }) => {
                     py: 8,
                     textAlign: "center",
                     color: COLORS.textSecondary,
+                    fontSize: 12.5,
                   }}
                 >
                   Loading jobs...
@@ -4340,16 +4845,16 @@ const OrganizationOverview = ({ orgId }) => {
               ) : filteredJobs.length === 0 ? (
                 <Box sx={{ py: 8, textAlign: "center" }}>
                   <WorkOutlineRoundedIcon
-                    sx={{ fontSize: 42, color: COLORS.textMuted, mb: 1.5 }}
+                    sx={{ fontSize: 36, color: COLORS.textMuted, mb: 1.5 }}
                   />
                   <Typography
-                    sx={{ fontSize: 15, fontWeight: 700, color: COLORS.text }}
+                    sx={{ fontSize: 13, fontWeight: 700, color: COLORS.text }}
                   >
                     No jobs found
                   </Typography>
                   <Typography
                     sx={{
-                      fontSize: 13,
+                      fontSize: 11,
                       color: COLORS.textSecondary,
                       mt: 0.5,
                     }}
@@ -4381,7 +4886,7 @@ const OrganizationOverview = ({ orgId }) => {
                         alignItems: "center",
                         gap: 1.5,
                         px: 1.5,
-                        py: 1.25,
+                        py: 1.1,
                         borderRadius: "14px",
                         border: `1px solid ${COLORS.border}`,
                         background: index % 2 === 0 ? "#fff" : "#FBFDFF",
@@ -4405,8 +4910,8 @@ const OrganizationOverview = ({ orgId }) => {
                       >
                         <Box
                           sx={{
-                            width: 40,
-                            height: 40,
+                            width: 36,
+                            height: 36,
                             borderRadius: "10px",
                             background: "#FFF4EE",
                             display: "flex",
@@ -4416,14 +4921,14 @@ const OrganizationOverview = ({ orgId }) => {
                           }}
                         >
                           <WorkOutlineRoundedIcon
-                            sx={{ fontSize: 20, color: COLORS.accent }}
+                            sx={{ fontSize: 18, color: COLORS.accent }}
                           />
                         </Box>
 
                         <Box sx={{ minWidth: 0 }}>
                           <Typography
                             sx={{
-                              fontSize: 14,
+                              fontSize: 12,
                               fontWeight: 800,
                               color: COLORS.text,
                               lineHeight: 1.2,
@@ -4436,7 +4941,7 @@ const OrganizationOverview = ({ orgId }) => {
                           </Typography>
                           <Typography
                             sx={{
-                              fontSize: 12,
+                              fontSize: 10.5,
                               color: COLORS.textSecondary,
                               mt: 0.4,
                             }}
@@ -4453,7 +4958,7 @@ const OrganizationOverview = ({ orgId }) => {
 
                       <Typography
                         sx={{
-                          fontSize: 13,
+                          fontSize: 11,
                           fontWeight: 700,
                           color: COLORS.textSecondary,
                         }}
@@ -4465,10 +4970,10 @@ const OrganizationOverview = ({ orgId }) => {
                       <Box
                         component="span"
                         sx={{
-                          fontSize: 11.5,
+                          fontSize: 10,
                           fontWeight: 800,
-                          px: "10px",
-                          py: "5px",
+                          px: "9px",
+                          py: "4px",
                           borderRadius: "999px",
                           background: `${statusColor}14`,
                           color: statusColor,
@@ -4495,8 +5000,10 @@ const OrganizationOverview = ({ orgId }) => {
                           color: COLORS.blue,
                           textTransform: "none",
                           fontWeight: 700,
+                          fontSize: 11,
                           borderRadius: "999px",
                           px: 2,
+                          py: 0.4,
                           whiteSpace: "nowrap",
                           background: "#fff",
                           "&:hover": {
@@ -4515,13 +5022,14 @@ const OrganizationOverview = ({ orgId }) => {
           </DialogContent>
 
           <DialogActions
-            sx={{ px: 2.5, py: 2, borderTop: `1px solid ${COLORS.border}` }}
+            sx={{ px: 2.5, py: 1.5, borderTop: `1px solid ${COLORS.border}` }}
           >
             <Button
               onClick={() => setJobsDialogOpen(false)}
               sx={{
                 textTransform: "none",
                 fontWeight: 700,
+                fontSize: 12,
                 color: COLORS.blue,
               }}
             >
@@ -4530,13 +5038,149 @@ const OrganizationOverview = ({ orgId }) => {
           </DialogActions>
         </Dialog>
 
+        {/* EXPANDED CARD VIEWS */}
+
+        {expandCard === "interviews" && (
+          <ExpandDialog
+            onClose={() => setExpandCard(null)}
+            title="Interviews Count by Status"
+            controls={
+              <>
+                <Toggle
+                  small
+                  value={interviewChartType}
+                  options={[
+                    { value: "line", label: "Line" },
+                    { value: "bar", label: "Bar" },
+                  ]}
+                  onChange={setInterviewChartType}
+                />
+                <Toggle
+                  small
+                  value={interviewType}
+                  options={[
+                    { value: "current", label: "Current" },
+                    { value: "cumulative", label: "Cumulative" },
+                  ]}
+                  onChange={setInterviewType}
+                />
+              </>
+            }
+          >
+            {interviewChartType === "bar" ? (
+              <ExpandedInterviewBars
+                data={interviewData}
+                labels={interviewLabels}
+                loading={interviewLoading}
+              />
+            ) : (
+              <ExpandedInterviewLines
+                data={interviewData}
+                labels={interviewLabels}
+                loading={interviewLoading}
+              />
+            )}
+          </ExpandDialog>
+        )}
+
+        {expandCard === "subfunction" && (
+          <ExpandDialog
+            onClose={() => setExpandCard(null)}
+            title="Candidates by Sub-function"
+          >
+            <SubFunctionBars data={DATA.subFunctions} />
+          </ExpandDialog>
+        )}
+
+        {expandCard === "pipeline" && (
+          <ExpandDialog
+            onClose={() => setExpandCard(null)}
+            title={`Candidate Pipeline : ${
+              pipelineType === "current" ? "Current" : "Cumulative"
+            } Pipeline`}
+            controls={
+              <Toggle
+                small
+                value={pipelineType}
+                options={[
+                  { value: "current", label: "Current" },
+                  { value: "cumulative", label: "Cumulative" },
+                ]}
+                onChange={setPipelineType}
+              />
+            }
+          >
+            <PipelineChart
+              data={pipelineData}
+              loading={isCandidateFunnelLoading}
+              type={pipelineType}
+              onStageClick={openStageDialog}
+            />
+          </ExpandDialog>
+        )}
+
+        {expandCard === "experience" && (
+          <ExpandDialog
+            onClose={() => setExpandCard(null)}
+            title="Candidate by Experience"
+            controls={
+              <Toggle
+                small
+                value={experienceType}
+                options={[
+                  { value: "donut", label: "Donut" },
+                  { value: "bar", label: "Bar" },
+                ]}
+                onChange={setExperienceType}
+              />
+            }
+          >
+            {experienceType === "donut" ? (
+              <ExpandedDonut
+                data={DATA.experience}
+                total={DATA.candidates.total}
+              />
+            ) : (
+              <HorizontalBars data={DATA.experience} maxValue={70} large />
+            )}
+          </ExpandDialog>
+        )}
+
+        {expandCard === "offers" && (
+          <ExpandDialog
+            onClose={() => setExpandCard(null)}
+            title="Offer Status"
+            controls={
+              <Toggle
+                small
+                value={offerType}
+                options={[
+                  { value: "current", label: "Current" },
+                  { value: "cumulative", label: "Cumulative" },
+                ]}
+                onChange={setOfferType}
+              />
+            }
+          >
+            <HorizontalBars
+              data={offerData}
+              maxValue={Math.max(
+                ...offerData.map((item) => Number(item.value) || 0),
+                1
+              )}
+              large
+            />
+          </ExpandDialog>
+        )}
+
         {stageDialog && (
           <StageDetailsDialog
-            key={`${stageDialog.key}-${pipelineType}`}
+            key={`${stageDialog.key}-${pipelineType}-${period}`}
             stage={stageDialog}
             orgId={orgId}
             countsType={pipelineType}
             subFunctionValue={selectedSubFunction}
+            periodConfig={periodConfig}
             onClose={() => setStageDialog(null)}
             navigate={navigate}
           />
