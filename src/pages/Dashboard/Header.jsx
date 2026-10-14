@@ -4,10 +4,12 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 export default function Header() {
   return (
     <Box
-      display="flex"
-      justifyContent="space-between"
-      alignItems="center"
-      mb={2}
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        mb: 2,
+      }}
     >
       <Box>
         <Typography variant="h5">Welcome, Shashikumar</Typography>

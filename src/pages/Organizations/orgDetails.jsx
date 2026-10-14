@@ -96,6 +96,7 @@ import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import CandidatePipelineFunnel from "./CandidatePipeline";
 import { toast } from "react-toastify";
 import OrganizationOverview from "../1dashboard1";
+import Billing from "./BIlling";
 
 const LABEL_SX = {
   fontSize: 10,
@@ -1285,12 +1286,7 @@ export default function OrgDetail() {
       )}
       {tab === 3 && <OrgInterviewsTab orgId={orgId} />}
       {tab === 4 && <OrgEmployeesTab orgId={orgId} />}
-      {tab === 5 && (
-        <StaticPlaceholder
-          label="Billing"
-          description="Billing and invoices will appear here."
-        />
-      )}
+      {tab === 5 && <Billing orgId={orgId} />}
     </Box>
   );
 }

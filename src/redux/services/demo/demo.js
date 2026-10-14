@@ -27,6 +27,33 @@ export const demoApi = api.injectEndpoints({
     }),
 
     // =========================================
+    // DEMO REQUEST ONBOARDING STATUS
+    // =========================================
+
+    getDemoRequestOnboardingStatus: builder.query({
+      query: (demo_request_id) => ({
+        url: `/acc/demo-requests/${demo_request_id}/onboarding-status`,
+        method: "GET",
+      }),
+      providesTags: (result, error, demo_request_id) => [
+        { type: "DemoRequests", id: demo_request_id },
+      ],
+    }),
+
+    // =========================================
+    // RESEND DEMO REQUEST INVITE
+    // =========================================
+
+    resendDemoRequestInvite: builder.mutation({
+      query: (demo_request_id) => ({
+        url: `/acc/demo-requests/${demo_request_id}/resend-invite`,
+        method: "POST",
+        body: {},
+      }),
+      invalidatesTags: ["DemoRequests"],
+    }),
+
+    // =========================================
     // INTERNAL USERS
     // =========================================
 
@@ -102,6 +129,23 @@ export const demoApi = api.injectEndpoints({
       invalidatesTags: ["DemoRequests"],
     }),
 
+    provisionSignup: builder.mutation({
+      query: (body) => ({
+        url: "/acc/account-manager/provision-signup",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["DemoRequests"],
+    }),
+
+    sendProvisionCredentials: builder.mutation({
+      query: (onboardingId) => ({
+        url: `/acc/account-manager/send-provision-credentials/${onboardingId}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["DemoRequests"],
+    }),
+
     // =========================================
     // GET PROVISION SIGNUP DETAILS
     // =========================================
@@ -112,6 +156,15 @@ export const demoApi = api.injectEndpoints({
         method: "GET",
       }),
     }),
+
+    createDemoRequestOnBehalf: builder.mutation({
+  query: (body) => ({
+    url: "/acc/demo-requests/create-on-behalf",
+    method: "POST",
+    body,
+  }),
+  invalidatesTags: ["DemoRequests"], 
+}),
 
     // =========================================
     // SUBMIT PROVISION SIGNUP DETAILS
@@ -152,10 +205,15 @@ export const demoApi = api.injectEndpoints({
 export const {
   useGetDemoRequestsQuery,
   useGetDemoRequestStatusesQuery,
+  useGetDemoRequestOnboardingStatusQuery,
+  useResendDemoRequestInviteMutation,
   useGetAllInternalUsersQuery,
   useUpdateDemoRequestStatusMutation,
   useAssignDemoRequestMutation,
   useSendCustomerInviteMutation,
+  useProvisionSignupMutation,
+  useSendProvisionCredentialsMutation,
   useGetProvisionSignupQuery,
   useSubmitProvisionSignupDetailsMutation,
+  useCreateDemoRequestOnBehalfMutation,
 } = demoApi;

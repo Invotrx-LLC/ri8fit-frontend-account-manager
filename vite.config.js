@@ -6,5 +6,10 @@ export default defineConfig({
   plugins: [react()],
    server: {
     port: 3000,
+    // Project sits inside OneDrive, where native file events are unreliable
+    watch: {
+      usePolling: true,
+      interval: 300,
+    },
   },
 })

@@ -7,6 +7,7 @@ import PeopleIcon    from "@mui/icons-material/PersonOutlineRounded";
 import CalendarIcon  from "@mui/icons-material/CalendarMonthOutlined";
 import SettingsIcon  from "@mui/icons-material/SettingsOutlined";
 import { ManageAccountsOutlined } from "@mui/icons-material";
+import MoveToInboxOutlinedIcon from "@mui/icons-material/MoveToInboxOutlined";
 
 export const BREADCRUMB_MAP = {
   dashboard:       { label: "Dashboard",     icon: DashboardIcon, path: "/account-manager/dashboard"    },
@@ -16,12 +17,43 @@ export const BREADCRUMB_MAP = {
   requisitions:    { label: "Requisitions",  icon: WorkIcon,      path: "/account-manager/requisitions" },
   interviews:      { label: "Interviews",    icon: CalendarIcon,  path: "/account-manager/interviews"   },
   candidates:      { label: "Candidates",    icon: PeopleIcon,    path: "/account-manager/candidates"   }, // ← fixed path
+  requests:        { label: "Requests",      icon: MoveToInboxOutlinedIcon, path: "/account-manager/requests" },
   candidate:       { label: "Candidate",     icon: PeopleIcon,    path: null },
   settings:        { label: "Settings",      icon: SettingsIcon,  path: "/account-manager/settings"     },
   _dynamic:        { icon: WorkIcon },
 };
 
 export const ROUTE_TRAILS = [
+
+  // ── Requests ──────────────────────────────────────────────────
+  {
+    match: "/account-manager/requests",
+    exact: true,
+    trail: [
+      { label: "Requests", icon: MoveToInboxOutlinedIcon, path: "/account-manager/requests", isLast: true },
+    ],
+  },
+  ...[
+    ["demo", "Demo Request"],
+    ["subscription", "Subscription Request"],
+    ["hiring", "Hiring Requests"],
+  ].map(([path, label]) => ({
+    match: `/account-manager/requests/${path}`,
+    exact: true,
+    trail: [
+      { label: "Requests", icon: MoveToInboxOutlinedIcon, path: "/account-manager/requests" },
+      { label, icon: MoveToInboxOutlinedIcon, path: null, isLast: true },
+    ],
+  })),
+  {
+    match: "/account-manager/requests/",
+    segmentCount: 4,
+    trail: [
+      { label: "Requests", icon: MoveToInboxOutlinedIcon, path: "/account-manager/requests" },
+      { label: "Demo Request", icon: MoveToInboxOutlinedIcon, path: "/account-manager/requests/demo" },
+      { label: "Details", icon: MoveToInboxOutlinedIcon, path: null, isLast: true },
+    ],
+  },
 
   // ── Dashboard ────────────────────────────────────────────────
   {

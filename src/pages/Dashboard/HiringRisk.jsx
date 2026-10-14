@@ -39,7 +39,7 @@ export default function HiringRisk() {
       }}
     >
       {/* Header */}
-      <Box display="flex" alignItems="center" gap={1} mb={2} flexShrink={0}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2, flexShrink: 0 }}>
         <Box
           sx={{
             width: 28,

@@ -41,6 +41,8 @@ export default function ReusableMRT({
   onRowClick,
   onDelete,
   height,
+  compactMode = false,
+  disableDefaultColumnPinning = false,
   ...rest          
 }) {
   // ✅ REQUIRED STATE
@@ -66,14 +68,15 @@ export default function ReusableMRT({
         // ✅ default cell styles + custom override
         muiTableBodyCellProps: {
           sx: {
-            fontSize: "13px",
+            fontSize: compactMode ? "12px" : "13px",
             color: "#374151",
             fontWeight: 500,
+            ...(compactMode ? { px: 1.5, py: 1, minWidth: 0 } : {}),
             ...(col.cellSx || {}),
           },
         },
       })),
-    [columnData],
+    [columnData, compactMode],
   );
 
   // ✅ TABLE INSTANCE
@@ -133,7 +136,7 @@ export default function ReusableMRT({
       //   left: enableRowSelection ? ["mrt-row-select"] : [],
       //   right: enableRowActions ? ["mrt-row-actions"] : [],
       // },
-      columnPinning: {
+      columnPinning: disableDefaultColumnPinning ? { left: [], right: [] } : {
         left: columnData.slice(0, 3).map((col) => col.accessorKey || col.id),
         right: [
           ...(enableRowActions ? ["mrt-row-actions"] : []),
@@ -155,9 +158,9 @@ export default function ReusableMRT({
     muiTableBodyCellProps: {
       sx: {
         backgroundColor: "white",
-        p: "14px 24px", // bigger cell padding
-        minWidth: "180px", // increase cell width
-        fontSize: "14px",
+        p: compactMode ? "10px 12px" : "14px 24px",
+        minWidth: compactMode ? 0 : "180px",
+        fontSize: compactMode ? "12px" : "14px",
       },
     },
 

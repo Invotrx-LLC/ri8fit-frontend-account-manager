@@ -85,9 +85,9 @@ const sidebarSections = [
         path: "/account-manager/user-management",
       },
       {
-        label: "Demo Requests",
+        label: "Requests",
         icon: <MoveToInboxOutlined />,
-        path: "/account-manager/demo-requests",
+        path: "/account-manager/requests",
       },
       {
         label: "Candidates",
@@ -1044,7 +1044,7 @@ function NotificationModal({ open, onClose }) {
                             },
                         }}
                       >
-                        {isClosed ? "Closed" : "Assign"}
+                        {isClosed ? "Closed" : "Assign candidates"}
                       </Button>
                     </Box>
                   </Box>
@@ -1225,7 +1225,22 @@ const DrawerLayout = () => {
           )}
         </Box>
 
-        <Box sx={{ flexGrow: 1, overflowY: "auto", py: 1 }}>
+        <Box
+          sx={{
+            flexGrow: 1,
+            overflowY: "auto",
+            py: 1,
+            scrollbarWidth: "thin",
+            scrollbarColor: "#CBD5E1 transparent",
+            "&::-webkit-scrollbar": { width: "5px" },
+            "&::-webkit-scrollbar-track": { background: "transparent" },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#CBD5E1",
+              borderRadius: "999px",
+            },
+            "&::-webkit-scrollbar-thumb:hover": { backgroundColor: "#94A3B8" },
+          }}
+        >
           {sidebarSections.map((section, si) => (
             <Box key={si} sx={{ mb: 1.5 }}>
               {open && (

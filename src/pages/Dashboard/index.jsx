@@ -22,15 +22,15 @@ export default function AmDashboard() {
       {/* <AlertBanner /> */}
 
       <Grid container spacing={2} mt={1}>
-        <Grid item size={{ xs: 12, md: 4 }}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <RecentlyHired />
         </Grid>
 
-        <Grid item size={{ xs: 12, md: 4 }}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <ExperienceDonut />
         </Grid>
 
-        <Grid item size={{ xs: 12, md: 4 }}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <InterviewHeatmap />
         </Grid>
       </Grid>
@@ -41,10 +41,10 @@ export default function AmDashboard() {
         <KpiCards />
       </Grid>
       <Grid container sx={{display:'flex',justifyContent:"space-between",gap:1,mt:2}}>
-        <Grid item size={{ xs: 12, md: 5.9 }}>
+        <Grid size={{ xs: 12, md: 5.9 }}>
           <TalentQualityChart />
         </Grid>
-        <Grid item size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <HiringRisk />
         </Grid>
       </Grid>

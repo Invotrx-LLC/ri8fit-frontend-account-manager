@@ -1,6 +1,6 @@
 // src/App.js
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -32,9 +32,15 @@ import ChangePasswordPage from "./pages/Settings/ChangePasswordPage";
 import CreateRequisition from "./pages/OrgRequisitions/createJob";
 import MatchedCandidates from "./pages/OrgRequisitions/createJob/matchedCandidates";
 import ViewProfileDetails from "./pages/OrgRequisitions/createJob/ViewProfileDetails";
-import DemoRequests from "./pages/DemoRequests";
+import RequestsPage from "./pages/Requests";
 import ProvisionSignup from "./pages/ProvisionSignup";
-import Subscriptions from "./pages/subscriptions";
+import DemoRequestDetails from "./pages/DemoRequests/DemoRequestDetails";
+import Subscriptions from "./pages/Subscriptions";
+const LegacyDemoRequestRedirect = () => {
+  const { demoRequestId } = useParams();
+  return <Navigate to={`/account-manager/requests/demo/${demoRequestId}`} replace />;
+};
+
 const App = () => {
   return (
     <>
@@ -56,17 +62,21 @@ const App = () => {
           {/* ── Protected Routes ── */}
           <Route path="/account-manager" element={<DrawerLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
-            <Route index path="demo-requests" element={<DemoRequests />} />
-            
-
+            <Route path="demo-requests" element={<Navigate to="requests/demo" replace />} />
+            <Route
+              path="demo-requests/:demoRequestId"
+              element={<LegacyDemoRequestRedirect />}
+            />
+            <Route path="requests/:requestType?" element={<RequestsPage />} />
+            <Route path="requests/demo/:demoRequestId" element={<DemoRequestDetails />} />
             {/* Dashboard */}
             <Route path="dashboard" element={<AmDashboard />} />
 
             {/* Organizations */}
             <Route path="organization" element={<AmOrganizations />} />
-            <Route path="create-requisition" element={<CreateRequisition/>}/>
-            <Route path="matched-candidates" element={<MatchedCandidates/>}/>
-            <Route path="view-profile" element={<ViewProfileDetails/>}/>
+            <Route path="create-requisition" element={<CreateRequisition />} />
+            <Route path="matched-candidates" element={<MatchedCandidates />} />
+            <Route path="view-profile" element={<ViewProfileDetails />} />
             {/*
             {/* User Management */}
             <Route path="user-management" element={<AccountManagement />} />
@@ -105,7 +115,7 @@ const App = () => {
             />
             <Route
               path="subscriptions"
-              element={<Subscriptions />}
+              element={<Subscriptions/>}
             />
           </Route>
 

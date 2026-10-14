@@ -20,6 +20,8 @@ export const api = createApi({
   "Subscriptions",
   "Candidates",
   "Invoices",
+  "AssignedRequests",
+  "CandidateScores",
 ],
   endpoints: () => ({}),
 });

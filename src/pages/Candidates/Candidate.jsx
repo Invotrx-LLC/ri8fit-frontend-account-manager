@@ -967,7 +967,7 @@ export default function CandidatesPage() {
               height: 36,
             },
           }}
-          InputProps={{
+          slotProps={{ input: {
             startAdornment: (
               <InputAdornment position="start">
                 {isSearching ? (
@@ -993,7 +993,7 @@ export default function CandidatesPage() {
                 </IconButton>
               </InputAdornment>
             ) : null,
-          }}
+          } }}
         />
 
         {/* Search mode pill */}
@@ -1242,12 +1242,14 @@ export default function CandidatesPage() {
       ════════════════════════════════════════ */}
       {isBusy ? (
         <Box
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          py={10}
-          gap={2}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            py: 10,
+            gap: 2,
+          }}
         >
           <CircularProgress sx={{ color: C.accent }} />
           <Typography fontSize={13} color={C.textSecondary}>

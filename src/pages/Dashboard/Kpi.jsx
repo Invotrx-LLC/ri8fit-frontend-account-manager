@@ -68,8 +68,8 @@ export default function KpiCards() {
             }}
           >
             {/* Top */}
-            <Box display="flex" justifyContent="space-between">
-              <Box minWidth={0}>
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Box sx={{ minWidth: 0 }}>
                 <Typography fontWeight={700} fontSize={18} noWrap>
                   {card.value}
                 </Typography>
